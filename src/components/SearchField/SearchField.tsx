@@ -1,0 +1,54 @@
+import { StyleSheet, TextInput } from 'react-native'
+import React, { useState, useMemo } from 'react'
+import { Posts } from '../../constants/Posts';
+import { Colors } from '../../constants';
+
+export default function SearchField() {
+  const [query, setQuery] = useState('');
+  const data = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let filtered = Posts.filter((r) => {
+      if (!q) return true;
+      const start = (r.startTime ?? '').toLowerCase();
+      const end = (r.endTime ?? '').toLowerCase();
+      return (
+        r.title.toLowerCase().includes(q) ||
+        start.includes(q) ||
+        end.includes(q) ||
+        r.id.toLowerCase().includes(q)
+      );
+    });
+
+    // filtered.sort((a, b) => {
+    //   const aKey = String(a[sortBy] ?? '');
+    //   const bKey = String(b[sortBy] ?? '');
+    //   return asc ? aKey.localeCompare(bKey) : bKey.localeCompare(aKey);
+    // });
+    console.log(query);
+
+    return filtered;
+  }, [Posts, query]);
+
+    return (
+      <TextInput
+        placeholder="Search posts..."
+        value={query}
+        onChangeText={setQuery}
+        style={styles.search}
+      />
+    )
+
+}
+
+const styles = StyleSheet.create({
+  search: {
+    borderWidth: 2,
+    borderColor: Colors.black,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+})
+
+
