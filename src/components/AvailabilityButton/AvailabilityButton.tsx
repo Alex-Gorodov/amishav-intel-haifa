@@ -35,10 +35,10 @@ export default function AvailabilityButton({ date, statuses, onChange }: Availab
         style={[
           styles.button,
           borderStyle,
-          { backgroundColor: isClosed ? '#ffb3b3' : '#fff' }
+          { backgroundColor: isClosed ? Colors.dailyStatusClosed : Colors.white }
         ]}
       >
-        <Text style={[styles.text, { color: isClosed ? '#7a0f0f' :'#333' }]}>
+        <Text style={[styles.text, { color: isClosed ? Colors.dailyStatusClosedText : Colors.mainDark }]}>
           {label}
         </Text>
       </TouchableOpacity>
@@ -59,21 +59,21 @@ export default function AvailabilityButton({ date, statuses, onChange }: Availab
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.mainDark,
     borderRadius: 20,
     overflow: 'hidden',
   },
   dateText: {
     padding: 4,
     textAlign: 'center',
-    color: 'white'
+    color: Colors.mainLight
   },
   card: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 0.4,
     borderColor: Colors.primaryLight,
-    shadowColor: "#000",
+    shadowColor: Colors.black,
     shadowOpacity: 0.1,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 4 },
@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: Colors.mainDark,
   },
 });

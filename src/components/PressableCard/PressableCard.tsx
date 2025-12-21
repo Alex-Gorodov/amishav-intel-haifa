@@ -1,5 +1,6 @@
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import React from 'react';
+import { Colors } from '../../constants';
 
 interface PressableCardProps {
   title: string;
@@ -24,9 +25,8 @@ export default function PressableCard({title, content, style, onHandle}: Pressab
 const styles = StyleSheet.create({
   wrapper: {
     width: '48%',
-    // aspectRatio: 1,
     minHeight: 120,
-    backgroundColor: 'white',
+    backgroundColor: Colors.mainLight,
     borderRadius: 12,
     padding: 16,
     justifyContent: 'center',
@@ -35,11 +35,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 600,
-    color: '#333',
+    color: Colors.mainDark,
     textAlign: 'center',
   },
   content: {
-    color: '#333',
+    color: Colors.mainDark,
 
   },
 })

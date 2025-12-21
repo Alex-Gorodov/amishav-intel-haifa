@@ -3,13 +3,16 @@ import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../services/firebaseConfig";
 import { User } from "../types/User";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { State } from "../types/State";
+import { setError } from "../store/actions";
+import { ErrorMessages } from "../constants/Messages";
 
 export type AppUser = User & { uid: string };
 
 export default function useUser() {
   const [user, setUser] = useState<AppUser | null>(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
@@ -35,7 +38,7 @@ export default function useUser() {
           setUser(null);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        dispatch(setError({message: ErrorMessages.CHECK_LOGIN_AND_PASSWORD}))
         setUser(null);
       }
     });

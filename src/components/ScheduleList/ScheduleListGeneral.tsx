@@ -1,73 +1,41 @@
-import { ScrollView, StyleSheet, Text, View, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import React, { useMemo, useState } from 'react';
-import PostsTable from '../PostsTable/PostsTable';
 import { Posts } from '../../constants/Posts';
 import ScheduleGrid from '../ScheduleGrid/ScheduleGrid';
 import { useSelector } from 'react-redux';
 import { State } from '../../types/State';
-import SearchField from '../SearchField/SearchField';
 import { GuardTasks } from '../../constants/GuardTasks';
 import { GuardTask } from '../../types/GuardTask';
+import { isSameDay, formatHeaderDate } from '../../utils/getCurrentWeekDates';
+import useUser from '../../hooks/useUser';
+import { useShiftRequestModal } from '../../hooks/useShiftRequestModal';
+import { getIsoLocalDateKey } from '../../utils/getIsoLocalDateKey';
+import ShiftActionsModal from '../ShiftActionsModal/ShiftActionsModal';
 
-// helper: returns array of 7 Date objects for the current week starting Monday
-function getCurrentWeekDates(reference = new Date(), startOfWeek: 'mon' | 'sun' = 'mon') {
-  const d = new Date(reference);
-  // compute monday
-  const dayOfWeek = (d.getDay() + 6) % 7; // 0 = Monday
-  const monday = new Date(d);
-  monday.setDate(d.getDate() - dayOfWeek);
-  const dates: Date[] = [];
-  for (let i = 0; i < 7; i++) {
-    const dt = new Date(monday);
-    dt.setDate(monday.getDate() + i);
-    dates.push(dt);
-  }
+export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }) {
 
-  if (startOfWeek === 'sun') {
-    // Return Sunday before the Monday (so week is Sun..Sat with Sunday preceding the Monday)
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() - 1);
-    return [sunday, ...dates.slice(0, 6)];
-  }
-
-  return dates;
-}
-
-function isoDateKey(dt: Date) {
-  return dt.toISOString().slice(0, 10); // YYYY-MM-DD
-}
-
-function formatHeaderDate(dt: Date) {
-  return dt.toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric' });
-}
-
-function isSameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-export default function ScheduleListGeneral() {
   const users = useSelector((state: State) => state.data.users);
+  const user = useUser();
 
-  const [isRemarkOpen, setRemarkOpen] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
   const [remarkText, setRemarkText] = useState('');
   const [modalDate, setModalDate] = useState('');
   const [modalTimes, setModalTimes] = useState('');
   const [remarkTitle, setRemarkTitle] = useState('');
   const [guardTasks, setGuardTasks] = useState<GuardTask[]>([]);
 
-  // start week on Sunday so visual order can be RTL starting with Sunday
-  const weekDates = useMemo(() => getCurrentWeekDates(new Date(), 'sun'), []);
-  const dateKeys = weekDates.map(isoDateKey);
+  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
 
-  // build rows per post: each row represents a post and cells contain comma-separated user names who have that post on that date
+  const dateKeys = useMemo(() => weekDates.map(getIsoLocalDateKey), [weekDates]);
+
   const rows = useMemo(() => {
     return Posts.map((post) => {
       const shiftsMap: Record<string, string | null> = {};
       dateKeys.forEach((key, idx) => {
         const day = weekDates[idx];
-        // find all users who have a shift on this date for this post
+
         const names = users
-          .filter((u) => u.shifts?.some((s) => isSameDay(s.date.toDate(), day) && s.post.id === post.id))
+          .filter((u) => u.shifts?.some((s) => isSameDay(s.date.toDate(), day) && s.post?.id === post.id))
           .map((u) => `${u.firstName} ${u.secondName}`);
         shiftsMap[key] = names.length ? names.join(', ') : null;
       });
@@ -80,24 +48,53 @@ export default function ScheduleListGeneral() {
     });
   }, [users, dateKeys]);
 
+  const {
+    currentShift,
+    setCurrentShift,
+    isMyShift,
+    setIsMyShift,
+    close,
+    modalView
+  } = useShiftRequestModal(() => setModalOpen(false));
+
+  const handleCloseModal = () => {
+    close();
+    setModalOpen(false);
+    setSelectedShiftId(null);
+  }
+
   return (
     <View style={styles.container}>
       <ScheduleGrid
         dates={dateKeys}
         rows={rows}
         cellWidth={96}
-        onCellPress={(postId, dateKey) => {
+        onCellPress={(postId, dateKey, value) => {
           const dayIndex = dateKeys.indexOf(dateKey);
           const day = weekDates[dayIndex];
+          setSelectedShiftId(value)
 
           const parts: string[] = [];
           const times = new Set<string>();
 
+          const selectedShift = users
+            .flatMap(u => u.shifts?.filter(s => s.post?.id === postId && isSameDay(s.date.toDate(), day)) || [])
+            .find(s => s);
+
+          if (!selectedShift) return;
+
+          setCurrentShift(selectedShift);
+          setModalOpen(true);
+
+          const fullName = `${user?.firstName || ''} ${user?.secondName || ''}`;
+
+          value && setIsMyShift(value.includes(fullName));
+
           users.forEach((u) => {
             u.shifts?.forEach((s) => {
               if (s.post?.id === postId && isSameDay(s.date.toDate(), day)) {
-                const start = s.post?.defaultStartTime ?? '';
-                const end = s.post?.defaultEndTime ?? '';
+                const start = s.startTime ?? s.post.defaultStartTime;
+                const end = s.endTime ?? s.post.defaultEndTime;
                 const time = (start || end) ? `${start} - ${end}` : '';
                 if (time) times.add(time);
 
@@ -107,9 +104,60 @@ export default function ScheduleListGeneral() {
             });
           });
 
-          // 🟦 ВАЖНО: найти задачи для конкретного поста
-          const postTasks = GuardTasks.filter(t => t.postId === postId);
-          setGuardTasks(postTasks);
+          // choose appropriate tasks for the day
+          const isWeekend = day.getDay() === 5 || day.getDay() === 6;
+          // determine shift suffix (morning/afternoon/night)
+          const suffixMatch = postId.match(/-(morning|afternoon|night)$/);
+          const suffix = suffixMatch ? suffixMatch[1] : null;
+          const basePostId = postId.replace(/-(morning|afternoon|night)$/, '');
+          // if postId has suffix (morning/afternoon/night), build weekend id accordingly
+          const weekendPostId = suffix ? `${basePostId}-${suffix}-weekend` : `${basePostId}-weekend`;
+
+          let tasksForPost: GuardTask[] = [];
+          // For weekend: prefer weekend-specific tasks for morning/afternoon shifts only.
+          if (isWeekend && suffix !== 'night') {
+            // prefer specific weekend-suffix (e.g. base-morning-weekend). If not found, fall back to base-weekend
+            if (GuardTasks.some(t => t.postId === weekendPostId)) {
+              tasksForPost = GuardTasks.filter(t => t.postId === weekendPostId);
+            } else if (GuardTasks.some(t => t.postId === `${basePostId}-weekend`)) {
+              tasksForPost = GuardTasks.filter(t => t.postId === `${basePostId}-weekend`);
+            } else {
+              tasksForPost = GuardTasks.filter(t => t.postId === postId);
+            }
+          } else {
+            // for night shifts (even on weekend) and default case use exact postId tasks
+            tasksForPost = GuardTasks.filter(t => t.postId === postId);
+          }
+
+          // build shift intervals from collected times (format like '06:30 - 15:00' or '06:30-15:00')
+          const shiftIntervals = Array.from(times).map((tm) => {
+            const parts = tm.split('-').map(p => p.trim());
+            return { start: parts[0], end: parts[1] };
+          }).filter(i => i.start && i.end);
+
+          const toMinutes = (t: string) => {
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + (m || 0);
+          };
+
+          const intervalsOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) => {
+            let aS = toMinutes(aStart);
+            let aE = toMinutes(aEnd);
+            let bS = toMinutes(bStart);
+            let bE = toMinutes(bEnd);
+            if (aE <= aS) aE += 24 * 60;
+            if (bE <= bS) bE += 24 * 60;
+            return Math.max(aS, bS) < Math.min(aE, bE);
+          };
+
+          const filteredByTime = tasksForPost.filter((t) => {
+            if (!t.time) return true;
+            const [ts, te] = t.time.split('-').map(x => x.trim());
+            if (shiftIntervals.length === 0) return true; // no shift time info -> keep
+            return shiftIntervals.some(si => intervalsOverlap(ts, te, si.start, si.end));
+          });
+
+          setGuardTasks(filteredByTime);
 
           const text = parts.length ? parts.join('\n\n') : '';
 
@@ -121,56 +169,38 @@ export default function ScheduleListGeneral() {
           setModalDate(formattedDate);
           setModalTimes(Array.from(times).join(', '));
           setRemarkText(text);
-          setRemarkOpen(true);
+          setModalOpen(true);
         }}
-
       />
-      <Modal transparent visible={isRemarkOpen} animationType="fade">
-        <TouchableWithoutFeedback onPress={() => setRemarkOpen(false)}>
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
-            <TouchableWithoutFeedback>
-              <View style={{ width: '80%', backgroundColor: '#fff', padding: 16, borderRadius: 12 }}>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                  <View>
-                    <Text>{modalDate}</Text>
-                    <Text>{modalTimes}</Text>
-                  </View>
-                  <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, textAlign: 'right' }}>{remarkTitle}</Text>
-                </View>
-                <View>
-                  <Text style={{ fontWeight: '600', marginBottom: 8, textAlign: 'right' }}>
-                    מסימות:
-                  </Text>
 
-                  {guardTasks
-                    .sort((a, b) => {
-                      const aStart = a.time.split('-')[0];
-                      const bStart = b.time.split('-')[0];
-                      return aStart.localeCompare(bStart);
-                    }).map((task, i) => (
-                    <View style={{marginBottom: 8}} key={i}>
-                      <View style={{flexDirection: 'row', justifyContent: 'flex-end', gap: 16, marginBottom: -4}}>
-                        <Text>{task.location}</Text>
-                        <Text>{task.time}</Text>
-                      </View>
-                      {task.remark && <Text style={{textAlign: 'right', fontSize: 12, color: '#898989'}}>{task.remark}</Text>}
-                    </View>
-                  ))}
-                </View>
-
-                <Text style={{ marginBottom: 12, textAlign: 'right' }}>{remarkText}</Text>
-                <TouchableOpacity onPress={() => setRemarkOpen(false)} style={{ alignSelf: 'flex-end', paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#333', borderRadius: 8 }}>
-                  <Text style={{ color: '#fff' }}>סגור</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      {
+        currentShift && selectedShiftId
+        &&
+        <ShiftActionsModal
+          visible={isModalOpen}
+          remarkText={remarkText}
+          modalDate={modalDate}
+          modalView={modalView}
+          modalTimes={modalTimes}
+          remarkTitle={remarkTitle}
+          guardTasks={guardTasks}
+          onClose={handleCloseModal}
+          isMyShift={isMyShift}
+          currentShift={currentShift}
+        />
+      }
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { height: '100%', backgroundColor: 'rgb(242,242,242)' },
+  modalShiftsList: {
+    maxHeight: 200,
+    borderWidth: 1,
+    padding: 8,
+    borderRadius: 24,
+    overflow: 'hidden',
+    boxShadow: 'inset 0px -4px 10px 0px rgba(0,0,0,0.4)'
+  },
 });

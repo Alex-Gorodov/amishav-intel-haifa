@@ -3,10 +3,11 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { ActivityIndicator } from "react-native";
 import { auth } from "./src/services/firebaseConfig";
 import AuthNavigator from "./src/app/auth/AuthNavigator";
-import Navigation from "./src/app/navigation/Navigation";
+import Navigation from "./src/app/Navigation/Navigation";
 import { Provider } from "react-redux";
 import { store } from "./src/store";
 import RootNavigator from "./src/app/RootNavigator";
+import ToastMessage from "./src/components/ToastMessage/ToastMessage";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -24,6 +25,7 @@ export default function App() {
 
   return (
     <Provider store={store}>
+      <ToastMessage/>
       {user ? <RootNavigator /> : <AuthNavigator />}
     </Provider>
   )

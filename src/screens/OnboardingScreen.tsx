@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Button } from 'react-native'
+import { StyleSheet, Image, Button, View } from 'react-native'
 import React, { useRef } from 'react'
 import Onboarding from 'react-native-onboarding-swiper';
 import { Colors } from '../constants';
@@ -13,27 +13,33 @@ export default function OnboardingScreen() {
   const navigation = useNavigation();
 
   const next = () => (
-    <Button
-      title={'הבא'}
-      color='black'
-      onPress={() => onboardingRef.current?.goNext()}
-    />
+    <View style={{paddingRight: 20}}>
+      <Button
+        title={'הבא'}
+        color={Colors.mainDark}
+        onPress={() => onboardingRef.current?.goNext()}
+        />
+    </View>
   )
 
   const skip = () => (
-    <Button
-      title={'דלג'}
-      color='black'
-      onPress={() => navigation.navigate("Login" as never)}
-    />
+    <View style={{paddingLeft: 20}}>
+      <Button
+        title={'דלג'}
+        color={Colors.mainDark}
+        onPress={() => navigation.navigate("Login" as never)}
+        />
+    </View>
   )
 
   const done = () => (
-    <Button
-      title={'כניסה'}
-      color='black'
-      onPress={() => navigation.navigate("Login" as never)}
-    />
+    <View style={{paddingRight: 20}}>
+      <Button
+        title={'כניסה'}
+        color={Colors.mainDark}
+        onPress={() => navigation.navigate("Login" as never)}
+        />
+    </View>
   )
 
   return (
@@ -59,11 +65,13 @@ export default function OnboardingScreen() {
           subtitle: "תנצלו את הזמן ואת הפוטנציאל שלכם!",
         },
       ]}
-      subTitleStyles={{fontSize: 20, maxWidth: '80%', textAlign: 'center', color: 'black'}}
-      titleStyles={{fontSize: 30, fontWeight: 'bold', color: 'black'}}
+
+      subTitleStyles={{fontSize: 20, maxWidth: '80%', textAlign: 'center', color: Colors.mainDark}}
+      titleStyles={{fontSize: 30, fontWeight: 'bold', color: Colors.mainDark}}
       containerStyles={{paddingBottom: 100}}
       onDone={() => navigation.navigate("Login" as never)}
       onSkip={() => navigation.navigate("Login" as never)}
+      bottomBarHighlight={false}
       NextButtonComponent={next}
       SkipButtonComponent={skip}
       DoneButtonComponent={done}

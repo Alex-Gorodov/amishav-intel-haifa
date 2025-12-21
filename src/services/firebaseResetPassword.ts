@@ -1,15 +1,18 @@
 import { sendPasswordResetEmail } from "firebase/auth";
-import { Alert } from "react-native";
 import { auth } from "./firebaseConfig";
+import { useDispatch } from "react-redux";
+import { setError, setSuccess } from "../store/actions";
+import { ErrorMessages, SuccessMessages } from "../constants/Messages";
 
 const resetPassword = async (email: string) => {
+  const dispatch = useDispatch();
+
   try {
     await sendPasswordResetEmail(auth, email);
-    console.log("The password reset link has been sent!");
     return { success: true };
   } catch (error: any) {
     if (error.code === 'auth/missing-email') {
-      error.message = 'Please enter e-mail';
+      dispatch(setError({message: ErrorMessages.ENTER_VALID_EMAIL}))
     }
     console.error("Error while resetting password:", error.message);
     return { success: false, error: error.message };
@@ -18,15 +21,11 @@ const resetPassword = async (email: string) => {
 
 export const handleResetPassword = async (email: string) => {
   const result = await resetPassword(email);
+  const dispatch = useDispatch();
+
   if (result.success) {
-    Alert.alert(
-      'Success',
-      'Check your email – we’ve sent a link to reset your password!'
-    );
+    dispatch(setSuccess({message: SuccessMessages.CHECK_EMAIL_FOR_RESET_LINK}));
   } else {
-    Alert.alert(
-      'Error',
-      result.error || 'Something went wrong.'
-    );
+    dispatch(setError({message: ErrorMessages.UNKNOWN_ERROR}));
   }
 };

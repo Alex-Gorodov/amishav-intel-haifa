@@ -3,15 +3,22 @@ import { Shift } from "../types/Shift";
 export function getShiftDuration(shift: Shift) {
   const start = shift.startTime || shift.post.defaultStartTime;
   const end = shift.endTime || shift.post.defaultEndTime;
-  if (!start || !end) return 0;
+  if (!start || !end) return "00:00";
 
   const [startH, startM] = start.split(':').map(Number);
   const [endH, endM] = end.split(':').map(Number);
 
-  let duration = (endH + endM / 60) - (startH + startM / 60);
+  const startTotal = startH * 60 + startM;
+  let endTotal = endH * 60 + endM;
 
-  // если смена через полночь
-  if (duration < 0) duration += 24;
+  if (endTotal < startTotal) {
+    endTotal += 24 * 60;
+  }
 
-  return duration;
+  const diff = endTotal - startTotal;
+
+  const hours = Math.floor(diff / 60);
+  const minutes = diff % 60;
+
+  return hours + minutes / 60;
 }

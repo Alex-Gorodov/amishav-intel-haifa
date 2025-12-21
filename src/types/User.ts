@@ -3,6 +3,7 @@ import { Roles } from "../constants/Roles";
 import { Shift } from "./Shift";
 import { Availability } from "./Availability";
 import { Document } from "./Document";
+import { Training } from "./Training";
 
 export type User = {
   id: string;
@@ -14,6 +15,14 @@ export type User = {
   email: string;
   availability: Availability[];
   documents: Document[];
+  trainings: {
+    safety: Training;
+    roni: Training;
+    weapon: Training;
+    mada: Training;
+    rights: Training;
+  };
+  phoneNumber: string;
   isAdmin?: boolean;
   avatarUrl?: string;
   createdAt?: Timestamp;

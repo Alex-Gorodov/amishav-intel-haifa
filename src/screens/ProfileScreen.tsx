@@ -3,28 +3,43 @@ import AddShiftModal from '../components/AddShiftModal/AddShiftModal';
 import UserOverview from '../components/UserOverview/UserOverview';
 import CustomButton from '../components/CustomButton/CustomButton';
 import { useNavigation } from '@react-navigation/native';
-import ScreenLayout from '../app/layouts/ScreenLayout';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, RefreshControl } from 'react-native';
 import useUser from '../hooks/useUser';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import useRefresh from '../hooks/useRefresh';
 
 export default function ProfileScreen() {
-  const [isAddModalOpened, setIsAddModalOpened] = useState(false);
+  const [isAddShiftModalOpened, setIsAddShiftModalOpened] = useState(false);
   const user = useUser();
   const navigation = useNavigation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewEmployeeModalOpen, setIsNewEmployeeModalOpen] = useState(false);
+  const refresh = useRefresh();
 
   return (
-    <ScreenLayout>
+
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={false} onRefresh={refresh.onRefresh}/>
+      }
+    >
       <View style={styles.container}>
         <UserOverview/>
+
+        <CustomButton title="מסמכים ותעודות" onHandle={() => navigation.navigate('Documents' as never)} />
+        <CustomButton title="הדרכות ורענונים" onHandle={() => navigation.navigate('Trainings' as never)} />
+        <CustomButton title="החלפות" onHandle={() => navigation.navigate('UserSwapAndGive' as never)} />
+        <CustomButton title="הוסף משמרת" onHandle={() => setIsAddShiftModalOpened(true)}/>
+
         {
           user && user.isAdmin &&
             <>
-              <CustomButton title="הוספת עובד חדש" onHandle={() => setIsModalOpen(true)}/>
+              <Text style={{textAlign: 'center', fontSize: 20, fontWeight: 600}}>אזור ראש הצוות</Text>
+              <CustomButton title="הוספת עובד חדש" onHandle={() => setIsNewEmployeeModalOpen(true)}/>
+              <CustomButton title="בניית סידור" onHandle={() => navigation.navigate('ScheduleCreating' as never)}/>
+              <CustomButton title="החלפות/מסירות" onHandle={() => navigation.navigate('AdminSwapsAndGives' as never)}/>
               <NewEmployeeForm
-                isOpened={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpened={isNewEmployeeModalOpen}
+                onClose={() => setIsNewEmployeeModalOpen(false)}
               />
             </>
 
@@ -32,21 +47,21 @@ export default function ProfileScreen() {
 
         {user && (
           <AddShiftModal
-            isOpened={isAddModalOpened}
-            onClose={() => setIsAddModalOpened(false)}
+            isOpened={isAddShiftModalOpened}
+            onClose={() => setIsAddShiftModalOpened(false)}
             userId={user.id}
           />
         )}
 
-        <CustomButton title="מסמכים" onHandle={() => navigation.navigate('Documents' as never)} />
-
       </View>
-    </ScreenLayout>
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     padding: 8,
+    paddingBottom: 100,
+    gap: 8,
   },
 })

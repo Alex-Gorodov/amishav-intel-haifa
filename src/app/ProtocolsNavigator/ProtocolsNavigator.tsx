@@ -1,13 +1,13 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import ControllerProtocolsScreen from "../../screens/Protocols/ControllerProtocolsScreen";
+import HourlyInstructionsScreen from "../../screens/Protocols/HourlyInstructionsScreen";
 import EmergencyProtocolsScreen from "../../screens/Protocols/EmergencyProtocolsScreen";
 import SecurityProtocolsScreen from "../../screens/Protocols/SecurityProtocolsScreen";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ProtocolsScreen from "../../screens/ProtocolsScreen";
-import { Colors } from "../../constants";
-import ControllerProtocolsScreen from "../../screens/Protocols/ControllerProtocolsScreen";
-import { signOut } from "firebase/auth";
 import { auth } from '../../services/firebaseConfig';
 import { Ionicons } from "@expo/vector-icons";
-import HourlyInstructionsScreen from "../../screens/Protocols/HourlyInstructionsScreen";
+import { Colors } from "../../constants";
+import { signOut } from "firebase/auth";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +23,7 @@ export default function ProtocolsNavigator() {
             <Ionicons
               name="exit-outline"
               size={24}
-              color="black"
+              color={Colors.mainDark}
               onPress={async () => {
                 await signOut(auth);
               }}
@@ -37,12 +37,12 @@ export default function ProtocolsNavigator() {
         component={EmergencyProtocolsScreen}
         options={{
           title: 'חירום',
-          headerTintColor: Colors.black,
+          headerTintColor: Colors.mainDark,
           headerRight: () => (
             <Ionicons
               name="exit-outline"
               size={24}
-              color="black"
+              color={Colors.mainDark}
               onPress={async () => {
                 await signOut(auth);
               }}
@@ -56,12 +56,12 @@ export default function ProtocolsNavigator() {
         component={SecurityProtocolsScreen}
         options={{
           title: 'ביטחון',
-          headerTintColor: Colors.black,
+          headerTintColor: Colors.mainDark,
           headerRight: () => (
             <Ionicons
               name="exit-outline"
               size={24}
-              color="black"
+              color={Colors.mainDark}
               onPress={async () => {
                 await signOut(auth);
               }}
@@ -75,12 +75,12 @@ export default function ProtocolsNavigator() {
         component={ControllerProtocolsScreen}
         options={{
           title: 'בקרה',
-          headerTintColor: Colors.black,
+          headerTintColor: Colors.mainDark,
           headerRight: () => (
             <Ionicons
               name="exit-outline"
               size={24}
-              color="black"
+              color={Colors.mainDark}
               onPress={async () => {
                 await signOut(auth);
               }}
@@ -94,12 +94,12 @@ export default function ProtocolsNavigator() {
         component={HourlyInstructionsScreen}
         options={{
           title: 'הוראות שעה',
-          headerTintColor: Colors.black,
+          headerTintColor: Colors.mainDark,
           headerRight: () => (
             <Ionicons
               name="exit-outline"
               size={24}
-              color="black"
+              color={Colors.mainDark}
               onPress={async () => {
                 await signOut(auth);
               }}

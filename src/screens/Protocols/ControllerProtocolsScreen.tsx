@@ -1,12 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import ProtocolGroup from '../../components/ProtocolGroup/ProtocolGroup';
+import { Protocols } from '../../constants/Protocols';
 
 export default function ControllerProtocolsScreen() {
+  const image = require('../../../assets/images/protocols/occ-cover.webp');
+
   return (
-    <View>
-      <Text>ControllerProtocolsScreen</Text>
-    </View>
+    <ProtocolGroup
+      image={image}
+      protocols={Protocols.controller}
+    />
   )
 }
-
-const styles = StyleSheet.create({})

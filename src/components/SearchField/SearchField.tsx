@@ -9,8 +9,8 @@ export default function SearchField() {
     const q = query.trim().toLowerCase();
     let filtered = Posts.filter((r) => {
       if (!q) return true;
-      const start = (r.startTime ?? '').toLowerCase();
-      const end = (r.endTime ?? '').toLowerCase();
+      const start = (r.defaultStartTime ?? '').toLowerCase();
+      const end = (r.defaultEndTime ?? '').toLowerCase();
       return (
         r.title.toLowerCase().includes(q) ||
         start.includes(q) ||
@@ -19,12 +19,6 @@ export default function SearchField() {
       );
     });
 
-    // filtered.sort((a, b) => {
-    //   const aKey = String(a[sortBy] ?? '');
-    //   const bKey = String(b[sortBy] ?? '');
-    //   return asc ? aKey.localeCompare(bKey) : bKey.localeCompare(aKey);
-    // });
-    console.log(query);
 
     return filtered;
   }, [Posts, query]);
@@ -43,7 +37,7 @@ export default function SearchField() {
 const styles = StyleSheet.create({
   search: {
     borderWidth: 2,
-    borderColor: Colors.black,
+    borderColor: Colors.mainDark,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,

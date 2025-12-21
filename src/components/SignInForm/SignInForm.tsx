@@ -1,80 +1,12 @@
-// import { useNavigation } from "@react-navigation/native";
-// import React, { use, useState } from "react";
-// import { View, TextInput, Button, StyleSheet, Text } from "react-native";
-
-// type SignInFormProps = {
-//   onSubmit: (id: string, password: string) => void;
-// };
-
-// export default function SignInForm({ onSubmit }: SignInFormProps) {
-//   const [id, setId] = useState("");
-//   const [password, setPassword] = useState("");
-//   const navigation = useNavigation();
-
-//   const handleLogin = () => {
-//     if (password.length !== 6) {
-//       return alert("הסיסמה חייבת להכיל 6 ספרות");
-//     }
-//     onSubmit(id, password);
-//   };
-
-//   return (
-//     <View style={styles.container}>
-
-//       <Text style={styles.label}>תעודת זהות / אימייל</Text>
-//       <TextInput
-//         placeholder="הכנס מספר ת.ז או אימייל"
-//         style={styles.input}
-//         value={id}
-//         onChangeText={setId}
-//       />
-
-//       <Text style={styles.label}>סיסמה (6 ספרות)</Text>
-//       <TextInput
-//         placeholder="******"
-//         style={styles.input}
-//         secureTextEntry
-//         keyboardType="numeric"
-//         maxLength={6}
-//         value={password}
-//         onChangeText={setPassword}
-//       />
-
-//       <Button title="כניסה" onPress={handleLogin} />
-//       <Button
-//         title="חזרה"
-//         onPress={() => navigation.navigate("Onboarding" as never)}
-//       />
-
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     padding: 24,
-//     gap: 14,
-//     marginTop: 80,
-//   },
-//   label: {
-//     fontSize: 16,
-//     fontWeight: "600",
-//     textAlign: "right",
-//   },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: "#aaa",
-//     borderRadius: 8,
-//     padding: 12,
-//     fontSize: 16,
-//     textAlign: "right",
-//   },
-// });
-
-
 import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet, Text } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, TextInput, Button, StyleSheet, Text, Pressable, TouchableOpacity, Alert, Keyboard } from "react-native";
+import CustomButton from "../CustomButton/CustomButton";
+import { Colors } from "../../constants";
+import { handleResetPassword } from "../../services/firebaseResetPassword";
+import { useDispatch } from "react-redux";
+import { setError } from "../../store/actions";
+import { ErrorMessages } from "../../constants/Messages";
 
 type SignInFormProps = {
   onSubmit: (
@@ -87,13 +19,19 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
   const [passportId, setPassportId] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const [isIdFocused, setIdFocused] = useState(false);
+  const [isPasswordFocused, setPasswordFocused] = useState(false);
+
+  const passwordRef = useRef<TextInput | null>(null);
+
+  const isEmail = passportId.includes("@");
 
   const handleLogin = () => {
     if (password.length !== 6) {
-      return alert("הסיסמה חייבת להכיל 6 ספרות");
+      dispatch(setError({message: ErrorMessages.PASSWORD_MIN_LENGTH_ERROR}))
     }
-
-    const isEmail = passportId.includes("@");
 
     onSubmit(
       { type: isEmail ? "email" : "passportId", value: passportId.trim() },
@@ -105,16 +43,28 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
     <View style={styles.container}>
       <Text style={styles.label}>תעודת זהות / אימייל</Text>
       <TextInput
+        onFocus={() => setIdFocused(true)}
+        onBlur={() => setIdFocused(false)}
+        onSubmitEditing={() => passwordRef.current?.focus()}
         placeholder="הכנס מספר ת.ז או אימייל"
-        style={styles.input}
+        placeholderTextColor={Colors.placeholder}
+        style={[styles.input, {borderColor: isIdFocused ? Colors.mainDark : "#aaa"}]}
+        returnKeyType="next"
+        keyboardType="email-address"
         value={passportId}
         onChangeText={setPassportId}
       />
 
       <Text style={styles.label}>סיסמה (6 ספרות)</Text>
       <TextInput
+        ref={passwordRef}
+        onFocus={() => setPasswordFocused(true)}
+        onBlur={() => setPasswordFocused(false)}
+        onSubmitEditing={() => {passwordRef.current?.blur(); Keyboard.dismiss();}}
+        returnKeyType="done"
         placeholder="******"
-        style={styles.input}
+        placeholderTextColor={Colors.placeholder}
+        style={[styles.input, {borderColor: isPasswordFocused ? Colors.mainDark : "#aaa"}]}
         secureTextEntry
         keyboardType="numeric"
         maxLength={6}
@@ -122,20 +72,39 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
         onChangeText={setPassword}
       />
 
-      <Button title="כניסה" onPress={handleLogin} />
-      <Button
+      <CustomButton title="כניסה" onHandle={handleLogin} invertColors/>
+      <CustomButton
         title="חזרה"
-        onPress={() => navigation.navigate("Onboarding" as never)}
+        onHandle={() => navigation.navigate("Onboarding" as never)}
       />
+
+      <TouchableOpacity
+        onPress={() => {
+          if (!passportId.includes("@")) {
+            dispatch(setError({message: ErrorMessages.ENTER_VALID_EMAIL}));
+          }
+          handleResetPassword(passportId.trim());
+        }}
+      >
+        <Text style={{
+          textAlign: 'center',
+          color: Colors.mainDark,
+          fontWeight: '600'
+        }}>
+          שכחת סיסמה?
+        </Text>
+      </TouchableOpacity>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    justifyContent: 'center',
     padding: 24,
-    gap: 14,
-    marginTop: 80,
+    gap: 12,
   },
   label: {
     fontSize: 16,
@@ -143,8 +112,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#aaa",
+    borderWidth: 2,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,

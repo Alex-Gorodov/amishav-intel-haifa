@@ -1,17 +1,20 @@
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import React from 'react';
+import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import React, { ReactElement } from 'react';
+import { Colors } from '../../constants';
 
 interface CardProps {
-  title: string;
-  content: string | number;
+  title: string | ReactElement;
+  titleStyle?: StyleProp<TextStyle>;
+  content: string | number | ReactElement;
   style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<TextStyle>;
 }
 
-export default function Card({title, content, style}: CardProps) {
+export default function Card({title, titleStyle, content, style, contentStyle}: CardProps) {
   return (
     <View style={[styles.wrapper, style]}>
-      <Text style={styles.content}>{content}</Text>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.content, contentStyle]}>{content}</Text>
+      <Text style={[styles.title, titleStyle]}>{title}</Text>
     </View>
   )
 }
@@ -22,16 +25,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 12,
-    gap: 12,
+    gap: 6,
     borderRadius: 16,
-    backgroundColor: 'white',
+    backgroundColor: Colors.mainLight,
   },
   content: {
+    alignSelf: 'center',
     fontSize: 32,
     fontWeight: 600,
-    color: '#333'
+    color: Colors.mainDark
   },
   title: {
-    color: '#333'
+    color: Colors.mainDark
   },
 })

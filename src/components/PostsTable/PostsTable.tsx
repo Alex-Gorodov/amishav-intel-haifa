@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Posts } from '../../constants/Posts';
 import type { Post } from '../../types/Post';
+import { Colors } from '../../constants';
 
 type SortKey = 'title' | 'startTime' | 'endTime';
 
@@ -31,12 +32,6 @@ export default function PostsTable({ rows = Posts }: { rows?: Post[] }) {
         r.id.toLowerCase().includes(q)
       );
     });
-
-    // filtered.sort((a, b) => {
-    //   const aKey = String(a[sortBy] ?? '');
-    //   const bKey = String(b[sortBy] ?? '');
-    //   return asc ? aKey.localeCompare(bKey) : bKey.localeCompare(aKey);
-    // });
 
     return filtered;
   }, [rows, query, sortBy, asc]);
@@ -61,11 +56,6 @@ export default function PostsTable({ rows = Posts }: { rows?: Post[] }) {
         <Text style={styles.hSmall}>{sortBy === 'title' ? (asc ? ' ↑' : ' ↓') : ''}</Text>
       </TouchableOpacity>
 
-
-      {/* <TouchableOpacity style={styles.hCell} onPress={() => toggleSort('endTime')}>
-        <Text style={styles.hText}>End</Text>
-        <Text style={styles.hSmall}>{sortBy === 'endTime' ? (asc ? ' ↑' : ' ↓') : ''}</Text>
-      </TouchableOpacity> */}
     </View>
   );
 
@@ -78,9 +68,6 @@ export default function PostsTable({ rows = Posts }: { rows?: Post[] }) {
         <Text style={styles.titleText}>{item.title}</Text>
         <Text style={styles.timeText}>{item.defaultStartTime}-{item.defaultEndTime}</Text>
       </View>
-      {/* <View style={styles.cell}>
-        <Text style={styles.cellText}>{item.endTime}</Text>
-      </View> */}
     </Pressable>
   );
 
@@ -107,10 +94,10 @@ export default function PostsTable({ rows = Posts }: { rows?: Post[] }) {
 }
 
 const styles = StyleSheet.create({
-  container: { backgroundColor: '#fff', borderRadius: 8, padding: 8 },
+  container: { backgroundColor: Colors.white, borderRadius: 8, padding: 8 },
   search: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Colors.mainLight,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -126,6 +113,6 @@ const styles = StyleSheet.create({
   cell: { flex: 1, alignItems: 'flex-start' },
   titleText: { fontSize: 16, textAlign: 'right' },
   timeText: { fontSize: 10, color: '#999', textAlign: 'right' },
-  cellText: { color: '#333' },
+  cellText: { color: Colors.mainDark },
   sep: { height: 1, backgroundColor: '#f0f0f0' },
 });

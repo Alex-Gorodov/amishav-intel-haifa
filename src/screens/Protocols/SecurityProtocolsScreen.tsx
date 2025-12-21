@@ -1,12 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import ProtocolGroup from '../../components/ProtocolGroup/ProtocolGroup';
+import { Protocols } from '../../constants/Protocols';
 
 export default function SecurityProtocolsScreen() {
+  const image = require('../../../assets/images/protocols/security-cover.jpg');
+
   return (
-    <View>
-      <Text>SecurityProtocolsScreen</Text>
-    </View>
+    <ProtocolGroup
+      image={image}
+      protocols={Protocols.security}
+    />
   )
 }
-
-const styles = StyleSheet.create({})

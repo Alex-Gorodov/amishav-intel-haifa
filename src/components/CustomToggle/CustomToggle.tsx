@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e6e6e6",
     overflow: "hidden",
     borderWidth: 2,
-    borderColor: Colors.black,
+    borderColor: Colors.mainDark,
   },
   slider: {
     position: "absolute",
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     left: 1,
     height: 38,
     borderRadius: 20,
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.mainDark,
   },
   item: {
     flex: 1,

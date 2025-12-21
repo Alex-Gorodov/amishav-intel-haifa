@@ -1,55 +1,108 @@
-import { useState, useCallback } from 'react';
+import { ErrorMessages } from '../constants/Messages';
 import * as ImagePicker from 'expo-image-picker';
+import { useState, useCallback } from 'react';
+import { setError } from '../store/actions';
+import { useDispatch } from 'react-redux';
+import { Alert } from 'react-native';
 
-export const useImageUpload = (onImageUploaded: (url: string) => void) => {
+export const useImageUpload = (
+  onImageUploaded: (url: string) => void
+) => {
   const [uploading, setUploading] = useState(false);
+  const dispatch = useDispatch();
 
-  const uploadToCloudinary = useCallback(async (uri: string, type?: string, name?: string) => {
-    const formData = new FormData();
-    formData.append("file", {
-      uri,
-      type: type || "image/jpeg",
-      name: name || "document.jpg",
-    } as any);
+  const uploadToCloudinary = useCallback(
+    async (uri: string, type: string = 'image/jpeg', name: string = `image-${Date.now()}.jpg`) => {
+      try {
+        setUploading(true);
 
-    formData.append("upload_preset", "amishav-intel-haifa-docs");
+        const formData = new FormData();
+        formData.append('file', { uri, type, name } as any);
+        formData.append('upload_preset', 'ml_default');
 
-    setUploading(true);
-
-    try {
-      const response = await fetch(
-        "https://api.cloudinary.com/v1_1/dluedowst/image/upload",
-        {
-          method: "POST",
+        const res = await fetch('https://api.cloudinary.com/v1_1/dluedowst/image/upload', {
+          method: 'POST',
           body: formData,
+        });
+
+        const data = await res.json();
+        if (!data.secure_url) {
+          console.error('❌ Cloudinary error:', data);
+          return;
         }
-      );
 
-      const data = await response.json();
-      console.log("Cloudinary response:", data);
-
-      if (data.secure_url) {
         onImageUploaded(data.secure_url);
-      } else {
-        console.error("⚠ Cloudinary error", data);
+      } catch (e: any) {
+        console.error('❌ Upload error:', e.message || e);
+      } finally {
+        setUploading(false);
       }
-    } catch (err: any) {
-      console.error("❌ Upload error:", err.message || err);
-    } finally {
-      setUploading(false);
-    }
-  }, [onImageUploaded]);
+    },
+    [onImageUploaded]
+  );
 
   const handlePickImage = useCallback(async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
-      allowsEditing: true,
-      quality: 0.7,
+    const result = await new Promise<{ uri: string; type: string; name: string } | null>(resolve => {
+      Alert.alert(
+        'בחר תמונה או צלם חדש',
+        '',
+        [
+          {
+            text: 'תמונה מהגלריה',
+            onPress: async () => {
+              const picker = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: false,
+                quality: 0.7,
+              });
+              if (!picker.canceled && picker.assets.length > 0) {
+                const asset = picker.assets[0];
+                resolve({
+                  uri: asset.uri,
+                  type: asset.type || 'image/jpeg',
+                  name: asset.fileName || `image-${Date.now()}.jpg`,
+                });
+              } else {
+                resolve(null);
+              }
+            },
+          },
+          {
+            text: 'צלם תמונה',
+            onPress: async () => {
+              const permission = await ImagePicker.requestCameraPermissionsAsync();
+              if (!permission.granted) {
+                dispatch(setError({message: ErrorMessages.CAMERA_ACCESS_NEEDED}));
+                resolve(null);
+                return;
+              }
+
+              const camera = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: false,
+                quality: 0.7,
+              });
+
+              if (!camera.canceled && camera.assets.length > 0) {
+                const asset = camera.assets[0];
+                resolve({
+                  uri: asset.uri,
+                  type: asset.type || 'image/jpeg',
+                  name: asset.fileName || `camera-${Date.now()}.jpg`,
+                });
+              } else {
+                resolve(null);
+              }
+            },
+          },
+          { text: 'ביטול', style: 'cancel', onPress: () => resolve(null) },
+        ],
+        { cancelable: true }
+      );
     });
 
-    if (!result.canceled && result.assets.length > 0) {
-      const asset = result.assets[0];
-      await uploadToCloudinary(asset.uri, asset.type, asset.fileName || '');
+    if (result) {
+      await uploadToCloudinary(result.uri, result.type, result.name);
     }
   }, [uploadToCloudinary]);
 

@@ -4,6 +4,7 @@ export type Post = {
   id: string;
   title: string;
   tasks?: GuardTask[];
-  defaultStartTime?: string;
-  defaultEndTime?: string;
+  hourlyRate: number;
+  defaultStartTime: string;
+  defaultEndTime: string;
 }

@@ -14,7 +14,6 @@ export const fetchUsers = async (dispatch: AppDispatch) => {
       data.docs.map(async (doc) => {
         const userData = doc.data();
 
-        // use doc.id as the canonical document id (firebase docs usually store id in doc.id)
         return {
           id: doc.id,
           passportId: userData.passportId || '',
@@ -26,6 +25,44 @@ export const fetchUsers = async (dispatch: AppDispatch) => {
           availability: userData.availability || [],
           isAdmin: userData.isAdmin || false,
           documents: userData.documents || [],
+          trainings: userData.trainings || {
+            safety: {
+              id: `${doc.id}-safety`,
+              title: 'הדרכת בטיחות',
+              description: '',
+              executionDate: null,
+              validityPeriod: 365,
+            },
+            roni: {
+              id: `${doc.id}-roni`,
+              title: 'רענון רוני',
+              description: '',
+              executionDate: null,
+              validityPeriod: 182,
+            },
+            weapon: {
+              id: `${doc.id}-weapon`,
+              title: 'רענון נשק',
+              description: '',
+              executionDate: null,
+              validityPeriod: 182,
+            },
+            mada: {
+              id: `${doc.id}-mada`,
+              title: 'רענון אזרה ראשונה',
+              description: '',
+              executionDate: null,
+              validityPeriod: 730,
+            },
+            rights: {
+              id: `${doc.id}-rights`,
+              title: 'הדרכת סמכויות',
+              description: '',
+              executionDate: null,
+              validityPeriod: 365,
+            }
+          },
+          phoneNumber: userData.phoneNumber || '',
           avatarUrl: userData.avatarUrl || '',
           createdAt: userData.createdAt || '',
         } as User;

@@ -22,7 +22,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.gor0d.amishavintelhaifa"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -37,6 +38,14 @@
     },
     "updates": {
       "url": "https://u.expo.dev/bb30aebc-018a-4092-9c06-71d7197c4549"
-    }
+    },
+    "plugins": [
+        [
+          "expo-camera",
+          {
+            "cameraPermission": "כדי לצלם תמונות"
+          }
+        ]
+      ]
   }
 }

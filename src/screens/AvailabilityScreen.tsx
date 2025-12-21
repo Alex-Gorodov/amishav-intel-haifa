@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
-import ScreenLayout from '../app/layouts/ScreenLayout';
 import AvailabilityButton from '../components/AvailabilityButton/AvailabilityButton';
 import { getWeekDates } from '../utils/dateUtils';
 import CustomButton from '../components/CustomButton/CustomButton';
 import { Timestamp, doc, setDoc } from "firebase/firestore";
 import useUser from '../hooks/useUser';
 import { db } from '../services/firebaseConfig';
-import { fetchUsers } from '../store/api/fetch.api';
+import { fetchUsers } from '../store/api/fetchUsers.api';
 import { useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import { updateAvailability } from '../store/actions';
-import * as Haptics from 'expo-haptics';
+import useRefresh from '../hooks/useRefresh';
+import { Colors } from '../constants';
 
 export default function AvailabilityScreen() {
   const user = useUser();
@@ -49,10 +49,7 @@ export default function AvailabilityScreen() {
   setWeekAvailabilityState(newReq);
 }, [user, currentWeekStart]);
 
-  const onRefresh = React.useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    fetchUsers(dispatch);
-  }, [dispatch]);
+  const refresh = useRefresh();
 
   const updateDay = (index: number, statuses: boolean[]) => {
     setWeekAvailabilityState((prev) => {
@@ -149,51 +146,46 @@ export default function AvailabilityScreen() {
   };
 
   return (
-    <ScreenLayout>
-      <View style={styles.container}>
-        <FlatList
-          refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
-          data={week}
-          keyExtractor={(item) => item.date.toISOString()}
-          renderItem={({ item, index }) => (
-            <View style={{ marginBottom: 8 }}>
-              <AvailabilityButton
-                date={item.date}
-                statuses={weekAvailabilityState[index]}
-                onChange={(newStatuses) => updateDay(index, newStatuses)}
-              />
-            </View>
-          )}
-        />
+    <View style={styles.container}>
+      <FlatList
+        refreshControl={<RefreshControl refreshing={false} onRefresh={refresh.onRefresh} />}
+        data={week}
+        keyExtractor={(item) => item.date.toISOString()}
+        renderItem={({ item, index }) => (
+          <View style={{ marginBottom: 8 }}>
+            <AvailabilityButton
+              date={item.date}
+              statuses={weekAvailabilityState[index]}
+              onChange={(newStatuses) => updateDay(index, newStatuses)}
+            />
+          </View>
+        )}
+      />
 
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-          <CustomButton
-            style={{ flex: 1 }}
-            title={<Ionicons name="chevron-back" size={16} />}
-            onHandle={handleNextWeek}
-          />
-          <CustomButton
-            style={{ flex: 10 }}
-            title={
-              isSending
-                ? <ActivityIndicator color={'white'} />
-                : sentSuccess
-                  ? "נשלח!"
-                  : "שלח"
-            }
-            onHandle={handleSend}
-            invertColors
-            disabled={isSending}
-          />
-          <CustomButton
-            style={{ flex: 1 }}
-            title={<Ionicons name="chevron-forward" size={16} />}
-            onHandle={handlePrevWeek}
-            disabled={isPrevWeekBlocked}
-          />
-        </View>
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+        <CustomButton
+          title={<Ionicons name="chevron-back" size={20} />}
+          onHandle={handleNextWeek}
+        />
+        <CustomButton
+          style={{ flex: 1 }}
+          title={
+            isSending
+              ? <ActivityIndicator color={Colors.mainDark} />
+              : sentSuccess
+                ? "נשלח!"
+                : "שלח"
+          }
+          onHandle={handleSend}
+          disabled={isSending}
+        />
+        <CustomButton
+          title={<Ionicons name="chevron-forward" size={20} />}
+          onHandle={handlePrevWeek}
+          disabled={isPrevWeekBlocked}
+        />
       </View>
-    </ScreenLayout>
+    </View>
   );
 }
 

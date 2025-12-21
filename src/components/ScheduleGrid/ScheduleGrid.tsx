@@ -10,7 +10,11 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   useWindowDimensions,
+  Pressable,
 } from 'react-native';
+import { Colors } from '../../constants';
+import useUser from '../../hooks/useUser';
+import { Ionicons } from '@expo/vector-icons';
 
   type ShiftRow = {
     id: string;
@@ -24,7 +28,7 @@ import {
     rows: ShiftRow[]; // rows with names and per-date values
     cellWidth?: number;
     rightColumnWidth?: number;
-    onCellPress?: (rowId: string, dateKey: string, row?: ShiftRow) => void;
+    onCellPress?: (rowId: string, dateKey: string, value: string, row?: ShiftRow ) => void;
   };
 
   // This component implements a table with:
@@ -35,6 +39,7 @@ import {
   // The right column is a separate FlatList; vertical scroll is synchronized with the main FlatList.
 
   export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnWidth, onCellPress }: Props) {
+    const user = useUser();
     const horizontalRef = useRef<ScrollView | null>(null);
     const headerRef = useRef<ScrollView | null>(null);
     const mainListRef = useRef<FlatList<any> | null>(null);
@@ -44,6 +49,8 @@ import {
     const [remarkToShow, setRemarkToShow] = useState('');
 
     const [headerHeight, setHeaderHeight] = useState(0);
+    const [isMarked, setMarked] = useState(false);
+
     const { height: windowHeight } = useWindowDimensions();
 
     const isSyncing = useRef(false);
@@ -84,9 +91,8 @@ import {
       }
     })();
 
-
     const renderHeader = () => (
-      <View onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)} style={[styles.headerRow, {backgroundColor: '#ccc'}]}>
+      <View onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)} style={[styles.headerRow, {backgroundColor: Colors.tableBorder}]}>
         <ScrollView
           ref={headerRef}
           horizontal
@@ -109,28 +115,44 @@ import {
           })}
         </ScrollView>
 
-        <View style={[styles.rightHeader, { width: 90 }]}>
-          <Text style={styles.headerText}></Text>
+        <View style={[styles.rightHeader, { width: 90, height: 50 }]}>
+          <Pressable onPress={() => setMarked(!isMarked)} style={{alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <Ionicons name={isMarked ? 'eye-off-outline' : 'eye-outline'} size={24} color={isMarked ? Colors.placeholder : Colors.mainDark}/>
+          </Pressable>
         </View>
       </View>
     );
 
     const renderRow = ({ item }: { item: ShiftRow; index: number }) => (
       <View style={styles.row}>
-        {/* main horizontal area: rendered inside outer horizontal ScrollView */}
+
         <View style={{ flexDirection: 'row' }}>
           {[...dates].slice().reverse().map((d, i) => {
-            const key = d; // dates are passed as ISO keys from parent
+            const key = d;
             const value = item.shifts[key] ?? null;
+            const valueDate = new Date(d + 'T00:00:00');
+
+            const isToday =
+              valueDate.toDateString() === new Date().toDateString();
+
+            const isUserAssigned =
+              user &&
+              value &&
+              value.includes(`${user.firstName} ${user.secondName}`);
+
+            const cellBackground =
+              isToday
+                ? (isMarked && isUserAssigned ? Colors.accent : '#e6e6e6ff')
+                : (isMarked && isUserAssigned ? Colors.accent : 'transparent');
 
             return (
               <TouchableOpacity
                   key={i}
-                  style={[styles.cell, { width: cellWidth }]}
+                  style={[styles.cell, { width: cellWidth, backgroundColor: cellBackground }]}
                   onPress={() => {
                     // if parent provided onCellPress, delegate handling to parent (it may have full shift objects)
                     if (onCellPress) {
-                      onCellPress(item.id, key, item);
+                      onCellPress(item.id, key, value || '', item );
                       return;
                     }
 
@@ -140,7 +162,7 @@ import {
                     if (raw && typeof raw === 'object') remark = (raw.remark ?? JSON.stringify(raw));
                     else if (raw) remark = String(raw);
                     // fallback to show raw data for debugging if remark is empty
-                    const debug = remark || (raw ? JSON.stringify(raw) : 'Нет описания');
+                    const debug = remark || (raw ? JSON.stringify(raw) : 'אין הערות');
                     setRemarkToShow(debug);
                     setRemarkShowed(true);
                   }}
@@ -154,7 +176,7 @@ import {
       </View>
     );
 
-    const gridHeight = Math.max(120, windowHeight - headerHeight - 135 - 100);
+    const gridHeight = Math.max(120, windowHeight - headerHeight - 135 - 150);
 
     // On mount, scroll the horizontal area and header to the end (right side)
     useEffect(() => {
@@ -173,16 +195,18 @@ import {
       <View style={styles.container}>
         {renderHeader()}
 
-        <Modal transparent visible={isRemarkShowed} animationType="fade">
+        {/* <Modal transparent visible={isRemarkShowed} animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
               <Text style={styles.modalText}>{remarkToShow}</Text>
               <TouchableOpacity style={styles.modalClose} onPress={() => setRemarkShowed(false)}>
-                <Text style={{ color: '#fff', fontWeight: '600' }}>סגור</Text>
+                <Text style={{ color: '#eee', fontWeight: '600' }}>סגור</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </Modal>
+        </Modal> */}
+
+
 
         {/* main area: constrain height so table ends above navigation (bottom spacing ~100px) */}
         <View style={{ flexDirection: 'row', height: gridHeight }}>
@@ -207,37 +231,36 @@ import {
             />
             {/* right column separate to keep it fixed */}
           </ScrollView>
-            <FlatList
-              ref={rightListRef}
-              data={rows}
-              keyExtractor={(r) => r.id}
-              renderItem={({ item }) => (
-                <View style={styles.rightCell}>
-                  <Text style={styles.cellText} numberOfLines={2} ellipsizeMode="tail">{item.name}</Text>
-                </View>
-              )}
-              onScroll={onRightListScroll}
-              scrollEventThrottle={16}
-              style={{ width: rightWidth, height: gridHeight }}
-            />
+          <FlatList
+            ref={rightListRef}
+            data={rows}
+            keyExtractor={(r) => r.id}
+            renderItem={({ item }) => (
+              <View style={styles.rightCell}>
+                <Text style={styles.cellText} numberOfLines={2} ellipsizeMode="tail">{item.name}</Text>
+              </View>
+            )}
+            onScroll={onRightListScroll}
+            scrollEventThrottle={16}
+            style={{ width: rightWidth, height: gridHeight }}
+          />
         </View>
       </View>
     );
   }
 
   const styles = StyleSheet.create({
-    container: { flex: 1, borderColor: '#000000', borderBottomWidth: 10 },
-    headerRow: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderColor: '#ccc' },
+    container: { flex: 1, borderColor: Colors.mainDark, borderBottomWidth: 10 },
+    headerRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#6f6f6f' },
     headerText: { fontWeight: '600', textAlign: 'right' },
-    dateCell: { paddingHorizontal: 8, paddingVertical: 16, justifyContent: 'center', alignItems: 'center', borderLeftWidth: 1, borderColor: '#fff' },
+    dateCell: { paddingHorizontal: 8, paddingVertical: 16, justifyContent: 'center', alignItems: 'center', borderLeftWidth: 1, borderColor: '#6f6f6f' },
     row: { flexDirection: 'row', alignItems: 'center', height: 50 },
-    cell: { height: 50, padding: 0, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#ccc' },
+    cell: { height: 50, padding: 0, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1, borderBottomWidth: 1, borderColor: Colors.tableBorder },
     cellText: { fontSize: 10, flexWrap: 'wrap', textAlign: 'right' },
-    // separator: { height: 1, backgroundColor: '#ccc' },
-    rightHeader: { padding: 8, justifyContent: 'center', borderLeftWidth: 1, borderColor: '#ccc' },
-    rightCell: { padding: 8, height: 50, justifyContent: 'center', alignItems: 'center', borderLeftWidth: 1, borderBottomWidth: 1, borderColor: '#ccc' },
+    rightHeader: { flexDirection: 'row', justifyContent: 'center', borderLeftWidth: 1,  borderColor: '#6f6f6f' },
+    rightCell: { padding: 8, height: 50, justifyContent: 'center', alignItems: 'center', borderLeftWidth: 2, borderBottomWidth: 1, borderColor: Colors.tableBorder },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
-    modalCard: { width: '80%', backgroundColor: '#fff', padding: 16, borderRadius: 12, alignItems: 'center' },
-    modalText: { marginBottom: 12, textAlign: 'center', color: '#000' },
-    modalClose: { marginTop: 8, paddingVertical: 10, paddingHorizontal: 18, backgroundColor: '#333', borderRadius: 8 },
+    modalCard: { width: '80%', backgroundColor: '#eee', padding: 16, borderRadius: 12, alignItems: 'center' },
+    modalText: { marginBottom: 12, textAlign: 'center', color: Colors.mainDark },
+    modalClose: { marginTop: 8, paddingVertical: 10, paddingHorizontal: 18, backgroundColor: Colors.mainDark, borderRadius: 8 },
   });

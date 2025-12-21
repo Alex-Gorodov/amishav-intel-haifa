@@ -1,6 +1,5 @@
 import { StyleSheet, View } from 'react-native'
 import React from 'react'
-import ScreenLayout from '../app/layouts/ScreenLayout'
 import PressableCard from '../components/PressableCard/PressableCard'
 import { useNavigation } from '@react-navigation/native'
 
@@ -8,14 +7,12 @@ export default function ProtocolsScreen() {
   const navigation = useNavigation();
 
   return (
-    <ScreenLayout>
-      <View style={styles.grid}>
-        <PressableCard title='חירום' onHandle={() => navigation.navigate("EmergencyProtocols" as never)}/>
-        <PressableCard title='ביטחון' onHandle={() => navigation.navigate("SecurityProtocols" as never)}/>
-        <PressableCard title='בקרה' onHandle={() => navigation.navigate("ControllerProtocols" as never)}/>
-        <PressableCard title='הוראות שעה' onHandle={() => navigation.navigate("HourlyInstructions" as never)}/>
-      </View>
-    </ScreenLayout>
+    <View style={styles.grid}>
+      <PressableCard title='חירום' onHandle={() => navigation.navigate("EmergencyProtocols" as never)}/>
+      <PressableCard title='ביטחון' onHandle={() => navigation.navigate("SecurityProtocols" as never)}/>
+      <PressableCard title='בקרה' onHandle={() => navigation.navigate("ControllerProtocols" as never)}/>
+      {/* <PressableCard title='הוראות שעה' onHandle={() => navigation.navigate("HourlyInstructions" as never)}/> */}
+    </View>
   )
 }
 

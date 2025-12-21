@@ -1,77 +1,96 @@
-import { StyleSheet, Image, TouchableOpacity, ScrollView, Text, View, Linking, RefreshControl, Dimensions } from 'react-native';
-import React, { useCallback } from 'react';
-import useUser from '../hooks/useUser';
-import { WebView } from 'react-native-webview';
+import { StyleSheet, TouchableOpacity, ScrollView, Text, View, RefreshControl, Alert, Modal, Image } from 'react-native';
+import ImageWithMenu from '../components/ImageWithMenu/ImageWithMenu';
 import { getShortFileName } from '../utils/getShortFileName';
-import { fetchUsers } from '../store/api/fetch.api';
-import { useDispatch } from 'react-redux';
+import { GlobalStyles } from '../constants/GlobalStyles';
+import useRefresh from '../hooks/useRefresh';
+import { Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Pdf from 'react-native-pdf';
+import useUser from '../hooks/useUser';
+import { useState } from 'react';
 
 export default function DocumentsScreen() {
   const user = useUser();
-  const dispatch = useDispatch();
 
-  const onRefresh = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    fetchUsers(dispatch);
-  }, [dispatch]);
+  const [menuOpenedFor, setMenuOpenedFor] = useState<string | null>(null);
 
-  const source = { uri: 'http://samples.leanpub.com/thereactnativebook-sample.pdf', cache: true };
+  const refresh = useRefresh();
+
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const [isModalViewOpened, setModalViewOpened] = useState(false);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={false} onRefresh={onRefresh} />
+        <RefreshControl refreshing={false} onRefresh={refresh.onRefresh} />
       }
     >
       {user?.documents.length !== 0
         ?
         user?.documents.map((d) => {
-          const isImage = /\.(jpg|jpeg|png)$/i.test(d.url);
-          const isPdf = /\.pdf$/i.test(d.url);
 
           return (
+
             <TouchableOpacity
-              key={d.name + Math.random() * 100}
+              key={d.name}
               style={styles.item}
-              onPress={() => Linking.openURL(d.url)}
+              onPress={() => {
+                    setModalImage(d.url);
+                    setModalViewOpened(true);
+                  }}
+              onLongPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setMenuOpenedFor(d.name);
+              }}
             >
-              <View>
-                {isImage && (
-                  <Image
-                    source={{ uri: d.url }}
-                    style={styles.image}
-                    resizeMode="cover"
-                  />
-                )}
-                {isPdf && (
-                  // <WebView source={{ uri: d.url }} style={{ flex: 1, width: '100%' }} />
-                  <Pdf
-                    source={source}
-                    onLoadComplete={(numberOfPages,filePath) => {
-                        console.log(`Number of pages: ${numberOfPages}`);
-                    }}
-                    onPageChanged={(page,numberOfPages) => {
-                        console.log(`Current page: ${page}`);
-                    }}
-                    onError={(error) => {
-                        console.log(error);
-                    }}
-                    onPressLink={(uri) => {
-                        console.log(`Link pressed: ${uri}`);
-                    }}
-                    style={styles.pdf}/>
-                )}
-                <Text style={{textAlign: 'center', marginTop: 8}}>{d.name.length > 12 ? getShortFileName(d.name, 8) : d.name }</Text>
+              <View style={styles.item}>
+                <ImageWithMenu
+                  url={d.url}
+                  name={d.name}
+                  onPress={() => {
+                    setModalImage(d.url);
+                    setModalViewOpened(true);
+                  }}
+                  menuOpened={menuOpenedFor === d.name}
+                  setMenuOpened={(v) => setMenuOpenedFor(v ? d.name : null)}
+                />
+                <Text style={{ textAlign: 'center', marginTop: 8 }}>
+                  {getShortFileName(d.name, 16)}
+                </Text>
               </View>
+
+              <Modal
+                visible={isModalViewOpened}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setModalViewOpened(false)}
+              >
+                <Pressable
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.9)',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  onPress={() => setModalViewOpened(false)}
+                >
+                  {modalImage && (
+                    <Image
+                      source={{ uri: modalImage }}
+                      style={{ width: '90%', height: '70%', borderRadius: 16 }}
+                      resizeMode="contain"
+                    />
+                  )}
+                </Pressable>
+              </Modal>
+
             </TouchableOpacity>
+
           )
         })
         :
         <View style={{flexDirection: 'column', marginTop: 40, justifyContent: 'center', alignItems: 'center', flex: 1, gap: 16}}>
-          <Text style={{fontSize: 18, fontWeight: 600}}>אין לך עדיין מסמכים 📄</Text>
-          <Text style={{fontSize: 14, fontWeight: 500}}> כדי להתחיל להעלות, לחץ/י על ➕</Text>
+          <Text style={GlobalStyles.emptyMessage}>אין לך עדיין מסמכים 📄</Text>
+          <Text style={{fontSize: 14, fontWeight: 500, textAlign: 'center'}}> כדי להתחיל להעלות, לחץ/י על ➕</Text>
         </View>
       }
     </ScrollView>
@@ -80,22 +99,7 @@ export default function DocumentsScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: 8 },
-  content: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  item: { width: '48%', marginTop: 16, backgroundColor: '#a0a0a0', borderRadius: 20, paddingBottom: 8, padding: 4 },
-  image: { width: '100%', height: 200, borderRadius: 8 },
-  pdfContainer: {
-    width: '100%',
-    height: 200,
-    backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  pdfText: { marginTop: 8, fontSize: 14, color: '#333' },
-
-    pdf: {
-        flex:1,
-        width:Dimensions.get('window').width,
-        height:Dimensions.get('window').height,
-    }
+  content: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingBottom: 100, gap: 8 },
+  item: { width: '100%', backgroundColor: '#a0a0a0', borderRadius: 20, paddingBottom: 8, padding: 4 },
+  imageContainer: { height: 150, overflow: 'hidden', borderRadius: 8 },
 });
