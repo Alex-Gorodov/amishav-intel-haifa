@@ -106,24 +106,24 @@ Built with **React Native**, the app focuses on a fast, clear, and user-friendly
 
 ## 🗂️ Main Screens
 
-### 📅 Home Screen
+### 🏠 Home Screen
 - User overview
 - User menu - documents and actions
 - Shift adding (just for testing)
 
-### 📅 Protocols Screen
+### 📚 Protocols Screen
 - The protocols of the workplace
 - Learning materials
 
-### 📅 Salary Screen
+### 💰 Salary Screen
 - Monthly salary overview
 - Month navigation
 - Shifts descriptions and salary per shift
 
-### 📅 Requests/Availability Screen
+### 📝 Requests/Availability Screen
 - Send requests and availability for the next work week
 
-### 📅 Calendar Screen
+### 📆 Calendar Screen
 - Monthly calendar
 - Month navigation
 - Week schedule
