@@ -136,13 +136,13 @@ const daysInMonth = useMemo(() => {
             // Если дата выбрана и смена есть
             return (
               <View>
-                <Text style={styles.detailTitle}>פרטי משמרת</Text>
-                <Text>עמדה: {selectedShift.post.title}</Text>
-                <Text>
-                  שעות: {selectedShift.startTime} – {selectedShift.endTime}
+                <Text style={[styles.detailTitle, {textAlign: 'right'}]}>פרטי משמרת</Text>
+                <Text style={{textAlign: 'right'}}>עמדה: {selectedShift.post.title}</Text>
+                <Text style={{textAlign: 'right'}}>
+                  שעות: {selectedShift.endTime} – {selectedShift.startTime}
                 </Text>
                 {selectedShift.remark && (
-                  <Text>הערה: {selectedShift.remark}</Text>
+                  <Text style={{textAlign: 'right'}}>הערה: {selectedShift.remark}</Text>
                 )}
               </View>
             );

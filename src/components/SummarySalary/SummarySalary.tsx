@@ -1,6 +1,7 @@
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { Colors } from '../../constants';
 import SalaryCard from '../SalaryCard/SalaryCard';
+import { BlurView } from 'expo-blur';
 
 interface SummarySalaryProps {
   totalHours: string;
@@ -52,30 +53,31 @@ export default function SummarySalary({ totalHours, totalShabbatHours, totalSala
 
 
   return (
-    <Animated.View style={[styles.summary, { height: headerHeight, margin: headerMargin, borderRadius: headerBorderRadius, overflow: 'hidden' }]}>
 
-      <Animated.View style={{ opacity: titleOpacity }}>
-        <SalaryCard salary={totalSalary} style={{backgroundColor: 'transparent'}} />
+      <Animated.View style={[styles.summary, { height: headerHeight, margin: headerMargin, borderRadius: headerBorderRadius, overflow: 'hidden' }]}>
+
+        <Animated.View style={{ opacity: titleOpacity }}>
+          <SalaryCard salary={totalSalary} style={{backgroundColor: 'transparent'}} />
+        </Animated.View>
+
+        <Animated.View style={{ flexDirection: 'row', width: '100%', marginBottom: -12, opacity: columnOpacity }}>
+          <View style={{backgroundColor: Colors.primary, flex: 1, paddingVertical: 8}}>
+            <Text style={{fontWeight: 600, fontSize: 26, textAlign: 'center'}}>{totalShabbatHours}</Text>
+            <Text style={styles.summaryItem}>שעות שבת</Text>
+          </View>
+          <View style={{backgroundColor: Colors.primary, flex: 1, paddingVertical: 8}}>
+            <Text style={{fontWeight: 600, fontSize: 26, textAlign: 'center'}}>{totalHours}</Text>
+            <Text style={styles.summaryItem}>ס״כ שעות</Text>
+          </View>
+        </Animated.View>
+
+        <Animated.View style={[styles.summaryRowSmall, { opacity: rowOpacity }]}>
+          <Text style={styles.summarySmall}>{totalHours} ⏱</Text>
+          <Text style={styles.summarySmall}>{totalShabbatHours} 🕯</Text>
+          <Text style={styles.summarySmall}>{totalSalary} 💵</Text>
+        </Animated.View>
+
       </Animated.View>
-
-      <Animated.View style={{ flexDirection: 'row', width: '100%', marginBottom: -12, opacity: columnOpacity }}>
-        <View style={{backgroundColor: Colors.primary, flex: 1, paddingVertical: 8}}>
-          <Text style={{fontWeight: 600, fontSize: 26, textAlign: 'center'}}>{totalShabbatHours}</Text>
-          <Text style={styles.summaryItem}>שעות שבת</Text>
-        </View>
-        <View style={{backgroundColor: Colors.primary, flex: 1, paddingVertical: 8}}>
-          <Text style={{fontWeight: 600, fontSize: 26, textAlign: 'center'}}>{totalHours}</Text>
-          <Text style={styles.summaryItem}>ס״כ שעות</Text>
-        </View>
-      </Animated.View>
-
-      <Animated.View style={[styles.summaryRowSmall, { opacity: rowOpacity }]}>
-        <Text style={styles.summarySmall}>{totalHours} ⏱</Text>
-        <Text style={styles.summarySmall}>{totalShabbatHours} 🕯</Text>
-        <Text style={styles.summarySmall}>{totalSalary} 💵</Text>
-      </Animated.View>
-
-    </Animated.View>
   );
 }
 

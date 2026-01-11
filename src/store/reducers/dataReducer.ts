@@ -1,6 +1,6 @@
 import { createReducer } from "@reduxjs/toolkit";
 import { DataState } from "../../types/State";
-import { loadUsers, setUsersDataLoading, updateAvailability, updateTraining, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest } from "../actions";
+import { loadUsers, setUsersDataLoading, updateAvailability, updateTraining, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts } from "../actions";
 import { SwapShiftRequest, GiveShiftRequest } from "../../types/Request";
 import { regenerateShiftId } from "../../utils/regenerateShiftId";
 
@@ -126,6 +126,12 @@ export const DataReducer = createReducer(initialState, (builder) => {
     .addCase(removeRequest, (state, action) => {
       state.swapRequests = state.swapRequests.filter(r => r.id !== action.payload);
       state.giveRequests = state.giveRequests.filter(r => r.id !== action.payload);
+    })
+    .addCase(updateUserShifts, (state, action) => {
+      const userToUpdate = state.users.find(u => u.id === action.payload.userId);
+      if (userToUpdate) {
+        userToUpdate.shifts = action.payload.shifts;
+      }
     });
 
 });

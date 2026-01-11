@@ -4,6 +4,7 @@ import { Availability } from "../types/Availability";
 import { Document } from "../types/Document";
 import { Timestamp } from "firebase/firestore";
 import { GiveShiftRequest, RequestStatus, SwapShiftRequest } from "../types/Request";
+import { Shift } from "../types/Shift";
 
 export const setUsersDataLoading = createAction<{isUsersDataLoading: boolean}>('data/setUsersDataLoading');
 export const loadUsers = createAction<{users: User[]}>('data/loadUsers');
@@ -32,3 +33,5 @@ export const removeRequest = createAction<string>('requests/remove');
 export const setError = createAction<{message: string | null}>('app/setError')
 
 export const setSuccess = createAction<{message: string | null}>('app/setSuccess')
+
+export const updateUserShifts = createAction<{userId: string, shifts: Shift[]}>('data/updateUserShifts');
