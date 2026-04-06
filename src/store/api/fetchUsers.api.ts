@@ -38,7 +38,7 @@ export const fetchUsers = async (dispatch: AppDispatch) => {
               title: 'רענון רוני',
               description: '',
               executionDate: null,
-              validityPeriod: 182,
+              validityPeriod: 365,
             },
             weapon: {
               id: `${doc.id}-weapon`,

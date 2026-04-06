@@ -423,7 +423,7 @@ export function generateSchedule(
     const requiredRole = getRoleByPost(post.id);
 
     // Собираем кандидатов: доступны, могут работать на этом посту
-    const candidates = users
+    const initialCandidates = users
       .filter(user => {
         // Проверка ролей
         if (!canUserWorkPost(user, post)) {
@@ -597,6 +597,57 @@ export function generateSchedule(
         if (a.currentWeekShifts !== b.currentWeekShifts) return a.currentWeekShifts - b.currentWeekShifts;
         return a.user.id.localeCompare(b.user.id);
       });
+
+    // Доступные кандидаты после первичных проверок — теперь применим дополнительную фильтрацию для разнообразия
+    const MAX_SAMEPOST_PER_WEEK_FOR_GUARD = 2; // охраннику можно дать тот же пост не чаще 2 раз в неделю
+    const MAX_SAMEPERIOD_PER_WEEK = 2; // в идеале не давать более 2 смен в одном периоде в неделю
+
+    const diversityRejected: string[] = [];
+    let candidates = initialCandidates.filter(c => {
+      const roleKey = getRoleByPost(post.id);
+
+      // Ограничение для охранников: не давать один и тот же пост слишком часто
+      if (roleKey === 'security_guard' && c.samePostCount >= MAX_SAMEPOST_PER_WEEK_FOR_GUARD) {
+        diversityRejected.push(`${c.user.firstName} ${c.user.secondName} rejected_by_samePostCount=${c.samePostCount}`);
+        return false;
+      }
+
+      // Ограничение на количество смен в одном периоде
+      if (c.samePeriodCount >= MAX_SAMEPERIOD_PER_WEEK) {
+        diversityRejected.push(`${c.user.firstName} ${c.user.secondName} rejected_by_samePeriodCount=${c.samePeriodCount}`);
+        return false;
+      }
+
+      return true;
+    });
+
+    // Если после строгой фильтрации никого не осталось — ослабим ограничения (во избежание пропусков)
+    if (candidates.length === 0 && initialCandidates.length > 0) {
+      if (debug) console.log('DEBUG_DIVERSITY: no candidates after diversity filters, relaxing constraints. Rejected list:', diversityRejected);
+      candidates = initialCandidates;
+    }
+
+    // Исключаем кандидатов, которые уже достигли лимита ночных смен для недели (по роли)
+    candidates = candidates.filter(c => {
+      if (period === 'night') {
+        const roleKey = requiredRole || 'any';
+        const limit = maxNightShiftsPerUserByRole[roleKey] ?? defaultMaxNightShiftsPerUser;
+        if (c.currentWeekNightCount >= limit) {
+          if (debug && c.user && debugUser && (debugUser === c.user.id || `${c.user.firstName} ${c.user.secondName}` === debugUser)) {
+            console.log(`DEBUG_NIGHT_REJECT: ${c.user.firstName} ${c.user.secondName} rejected due to night limit (${c.currentWeekNightCount} >= ${limit})`);
+          }
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // Сортируем: сначала по score, затем по количеству текущих смен (равномерное распределение), затем по user.id (детерминизм)
+    candidates.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.currentWeekShifts !== b.currentWeekShifts) return a.currentWeekShifts - b.currentWeekShifts;
+      return a.user.id.localeCompare(b.user.id);
+    });
 
     // Проверяем каждого кандидата на ограничения
     let assigned = false;

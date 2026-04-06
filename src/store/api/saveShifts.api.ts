@@ -2,26 +2,21 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../services/firebaseConfig";
 import { Shift } from "../../types/Shift";
 
-/**
- * Удаляет все поля со значением undefined из объекта (рекурсивно)
- */
 function removeUndefinedFields(obj: any): any {
   if (obj === null) {
     return null;
   }
 
   if (obj === undefined) {
-    return undefined; // будет отфильтровано на уровне выше
+    return undefined;
   }
 
-  // Обработка массивов
   if (Array.isArray(obj)) {
     return obj
       .map(item => removeUndefinedFields(item))
       .filter(item => item !== undefined);
   }
 
-  // Обработка объектов
   if (typeof obj === 'object' && obj.constructor === Object) {
     const cleaned: any = {};
     for (const key in obj) {
@@ -38,7 +33,6 @@ function removeUndefinedFields(obj: any): any {
     return cleaned;
   }
 
-  // Примитивы и специальные объекты (например, Timestamp) возвращаем как есть
   return obj;
 }
 
@@ -46,7 +40,6 @@ export const saveUserShifts = async (userId: string, shifts: Shift[]) => {
   try {
     const userRef = doc(db, "users", userId);
 
-    // Фильтруем некорректные смены
     const validShifts = shifts.filter(shift => {
       return shift &&
              shift.id &&
@@ -56,8 +49,6 @@ export const saveUserShifts = async (userId: string, shifts: Shift[]) => {
              shift.endTime;
     });
 
-    // Сериализуем смены для Firebase (убеждаемся, что все объекты Plain Objects)
-    // Создаем полный объект и затем очищаем от undefined
     const serializedShifts = validShifts.map(shift => {
       if (!shift.post) {
         throw new Error(`Shift ${shift.id} has no post`);
@@ -71,7 +62,6 @@ export const saveUserShifts = async (userId: string, shifts: Shift[]) => {
         defaultEndTime: shift.post.defaultEndTime,
       };
 
-      // Добавляем tasks только если они есть и не undefined
       if (shift.post.tasks !== undefined && shift.post.tasks !== null) {
         postData.tasks = shift.post.tasks;
       }
@@ -84,7 +74,6 @@ export const saveUserShifts = async (userId: string, shifts: Shift[]) => {
         endTime: shift.endTime,
       };
 
-      // Добавляем remark только если он определен
       if (shift.remark !== undefined && shift.remark !== null && shift.remark !== '') {
         shiftData.remark = shift.remark;
       }
@@ -92,10 +81,8 @@ export const saveUserShifts = async (userId: string, shifts: Shift[]) => {
       return shiftData;
     });
 
-    // Удаляем все undefined значения рекурсивно перед сохранением
     const cleanedShifts = removeUndefinedFields(serializedShifts);
 
-    // Дополнительная проверка - убеждаемся, что нет undefined или null в массиве
     const finalShifts = cleanedShifts.filter((shift: any) => {
       return shift !== undefined &&
              shift !== null &&

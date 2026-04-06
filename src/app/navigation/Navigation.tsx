@@ -36,20 +36,22 @@ export default function Navigation() {
   }, [dispatch]);
 
 
-    const allGiveRequests = useSelector((state: RootState) => state.data.giveRequests)
-    const allSwapRequests = useSelector((state: RootState) => state.data.swapRequests)
-    const users = useSelector((state: RootState) => state.data.users);
+  const allGiveRequests = useSelector((state: RootState) => state.data.giveRequests)
+  const allSwapRequests = useSelector((state: RootState) => state.data.swapRequests)
+  const users = useSelector((state: RootState) => state.data.users);
 
-    const allRequests = useMemo(() => {
-      return getRequestsWithShifts(
-        [...allGiveRequests, ...allSwapRequests],
-        users
-      );
-    }, [allGiveRequests, allSwapRequests, users]);
+  const allRequests = useMemo(() => {
+    return getRequestsWithShifts(
+      [...allGiveRequests, ...allSwapRequests],
+      users
+    );
+  }, [allGiveRequests, allSwapRequests, users]);
 
-    const receivedRequests = user
-        ? allRequests.filter(req => req.secondUserId === user.id)
-        : [];
+  const receivedRequests = user
+      ? allRequests.filter(req => req.secondUserId === user.id)
+      : [];
+
+  const hasTrainingsExpired = user?.trainings.roni.executionDate
 
 
   return (

@@ -2,12 +2,21 @@ import { Pressable, StyleSheet, Text, View, Animated, Easing } from 'react-nativ
 import React, { useRef, useState } from 'react';
 import { Training } from '../../types/Training';
 import { Colors, SCREEN_WIDTH } from '../../constants';
+import CustomButton from '../CustomButton/CustomButton';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useDispatch } from 'react-redux';
+import { updateTrainingExecutionDate } from '../../store/actions';
+import useUser from '../../hooks/useUser';
+import { updateTrainingDate } from '../../store/api/updateTrainingDate.api';
+import { User } from '../../types/User';
 
 interface TrainingProgressBarProps {
   training: Training;
+  trainingKey: keyof User['trainings'];
 }
 
-export default function TrainingProgressBar({ training }: TrainingProgressBarProps) {
+export default function TrainingProgressBar({ training, trainingKey }: TrainingProgressBarProps) {
+  const user = useUser();
   const currentDate = Date.now();
   const executionDate = training.executionDate && training.executionDate.toDate().getTime();
   const dateOfDeadline = executionDate ? executionDate + training.validityPeriod * 24 * 60 * 60 * 1000 : 0;
@@ -15,6 +24,8 @@ export default function TrainingProgressBar({ training }: TrainingProgressBarPro
   const total = executionDate && dateOfDeadline - executionDate;
   const passed = executionDate && currentDate - executionDate;
   const progress = passed && total && Math.min(Math.max(passed / total, 0), 1);
+
+  const dispatch = useDispatch();
 
   const animatedWidth = useRef(new Animated.Value(0)).current;
 
@@ -43,6 +54,9 @@ export default function TrainingProgressBar({ training }: TrainingProgressBarPro
     }).start();
   };
 
+  const [isDatePickerOpened, setDatePickerOpened] = useState(false)
+  const [date, setDate] = useState(new Date())
+
   return (
     <View style={styles.wrapper}>
 
@@ -65,6 +79,33 @@ export default function TrainingProgressBar({ training }: TrainingProgressBarPro
 
           <Text style={styles.label}>בתוקף עד:</Text>
           <Text style={styles.value}>{dateOfDeadline === 0 ? 'אין מידע' : new Date(dateOfDeadline).toLocaleDateString()}</Text>
+
+          <CustomButton style={{}} title="fhj" onHandle={() => setDatePickerOpened(true)}/>
+
+          {
+            isDatePickerOpened && user
+            &&
+            <DateTimePicker
+              value={date}
+              textColor={Colors.mainDark}
+              style={styles.datePicker}
+              locale="he-IL"
+              accentColor={Colors.primary}
+              onChange={(e, newDate) => {
+                if (!newDate) return;
+
+                setDate(newDate);
+
+                dispatch(updateTrainingExecutionDate({
+                  userId: user.id,
+                  training: training,
+                  date: newDate
+                }));
+
+                updateTrainingDate(user.id, trainingKey, date)
+              }}
+            />
+          }
 
           {training.description ? (
             <>
@@ -136,4 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
+  datePicker: {
+    marginTop: -40
+  }
 });

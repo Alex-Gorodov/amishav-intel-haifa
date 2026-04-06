@@ -5,6 +5,7 @@ import { Document } from "../types/Document";
 import { Timestamp } from "firebase/firestore";
 import { GiveShiftRequest, RequestStatus, SwapShiftRequest } from "../types/Request";
 import { Shift } from "../types/Shift";
+import { Training } from "../types/Training";
 
 export const setUsersDataLoading = createAction<{isUsersDataLoading: boolean}>('data/setUsersDataLoading');
 export const loadUsers = createAction<{users: User[]}>('data/loadUsers');
@@ -15,8 +16,6 @@ export const loadRequests = createAction<{type: 'swap' | 'give', requests: SwapS
 export const updateAvailability = createAction<{user: User, availability: Availability[]}>('data/updateAvailability');
 
 export const uploadDocument = createAction<{user: User, document: Document}>('data/uploadDocument');
-
-export const updateTraining = createAction<{user: User, date: Timestamp}>('data/updateTraining');
 
 export const sendSwapShiftRequest = createAction<{firstUser: User, secondUser: User, firstUserShiftId: string, secondUserShiftId: string}>('data/SwapShiftRequest');
 
@@ -35,3 +34,5 @@ export const setError = createAction<{message: string | null}>('app/setError')
 export const setSuccess = createAction<{message: string | null}>('app/setSuccess')
 
 export const updateUserShifts = createAction<{userId: string, shifts: Shift[]}>('data/updateUserShifts');
+
+export const updateTrainingExecutionDate = createAction<{userId: string, training: Training, date: Date}>('data/updateTrainingExecutionDate')
