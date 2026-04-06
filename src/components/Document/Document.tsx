@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import { Colors } from '../../constants';
 import CustomButton from '../CustomButton/CustomButton';
 import CancelButton from '../CancelButton/CancelButton';
+import { useFileUpload } from '../../hooks/useFileUpload';
 
 interface Props {
   url: string;
@@ -18,7 +19,7 @@ interface Props {
   setMenuOpened: (v: boolean) => void;
 }
 
-export default function ImageWithMenu({ url, name, onPress, menuOpened, setMenuOpened }: Props) {
+export default function Document({ url, name, onPress, menuOpened, setMenuOpened }: Props) {
   const [editing, setEditing] = useState(false);
   const [newName, setNewName] = useState(name);
   const user = useUser();
@@ -43,6 +44,18 @@ export default function ImageWithMenu({ url, name, onPress, menuOpened, setMenuO
     setMenuOpened(false);
   };
 
+  const { handlePickFileOrImage, uploading } = useFileUpload(async ({url, name}) => {
+    if (!user) return;
+    const userRef = doc(db, 'users', user.id);
+    await updateDoc(userRef, { documents: arrayUnion({ url, name }) });
+  });
+
+  const handleUpdateDocument = async () => {
+    handlePickFileOrImage();
+    await handleDelete();
+  }
+
+
   return (
     <>
       <Image source={{ uri: url }} style={styles.image} />
@@ -64,6 +77,7 @@ export default function ImageWithMenu({ url, name, onPress, menuOpened, setMenuO
             ) : (
               <>
                 <CustomButton onHandle={() => setEditing(true)} style={{}} title="לשנות שם"/>
+                <CustomButton onHandle={handleUpdateDocument} style={{}} title="לחדש"/>
                 <CustomButton style={{}} onHandle={() => {
                   setMenuOpened(false);
                   Linking.openURL(url);

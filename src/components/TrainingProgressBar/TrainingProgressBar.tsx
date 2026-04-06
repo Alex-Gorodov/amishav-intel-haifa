@@ -80,7 +80,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
           <Text style={styles.label}>בתוקף עד:</Text>
           <Text style={styles.value}>{dateOfDeadline === 0 ? 'אין מידע' : new Date(dateOfDeadline).toLocaleDateString()}</Text>
 
-          <CustomButton style={{}} title="fhj" onHandle={() => setDatePickerOpened(true)}/>
+          <CustomButton style={{}} title="לחדש" onHandle={() => setDatePickerOpened(true)}/>
 
           {
             isDatePickerOpened && user

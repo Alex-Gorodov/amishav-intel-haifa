@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, ScrollView, Text, View, RefreshControl, Alert, Modal, Image } from 'react-native';
-import ImageWithMenu from '../components/ImageWithMenu/ImageWithMenu';
+import Document from '../components/Document/Document';
 import { getShortFileName } from '../utils/getShortFileName';
 import { GlobalStyles } from '../constants/GlobalStyles';
 import useRefresh from '../hooks/useRefresh';
@@ -43,7 +43,7 @@ export default function DocumentsScreen() {
               }}
             >
               <View style={styles.item}>
-                <ImageWithMenu
+                <Document
                   url={d.url}
                   name={d.name}
                   onPress={() => {

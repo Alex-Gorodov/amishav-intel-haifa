@@ -11,7 +11,6 @@ export default function ProtocolsScreen() {
       <PressableCard title='חירום' onHandle={() => navigation.navigate("EmergencyProtocols" as never)}/>
       <PressableCard title='ביטחון' onHandle={() => navigation.navigate("SecurityProtocols" as never)}/>
       <PressableCard title='בקרה' onHandle={() => navigation.navigate("ControllerProtocols" as never)}/>
-      {/* <PressableCard title='הוראות שעה' onHandle={() => navigation.navigate("HourlyInstructions" as never)}/> */}
     </View>
   )
 }
