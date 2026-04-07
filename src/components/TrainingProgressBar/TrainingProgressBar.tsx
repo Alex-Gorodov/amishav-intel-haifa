@@ -80,7 +80,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
           <Text style={styles.label}>בתוקף עד:</Text>
           <Text style={styles.value}>{dateOfDeadline === 0 ? 'אין מידע' : new Date(dateOfDeadline).toLocaleDateString()}</Text>
 
-          <CustomButton style={{}} title="לחדש" onHandle={() => setDatePickerOpened(true)}/>
+          <CustomButton style={{}} title={isDatePickerOpened ? 'שמור' : 'לחדש'} onHandle={() => setDatePickerOpened(!isDatePickerOpened)}/>
 
           {
             isDatePickerOpened && user
@@ -90,6 +90,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
               textColor={Colors.mainDark}
               style={styles.datePicker}
               locale="he-IL"
+              maximumDate={new Date()}
               accentColor={Colors.primary}
               onChange={(e, newDate) => {
                 if (!newDate) return;
@@ -102,7 +103,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
                   date: newDate
                 }));
 
-                updateTrainingDate(user.id, trainingKey, date)
+                updateTrainingDate(user.id, trainingKey, newDate)
               }}
             />
           }
@@ -178,6 +179,6 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   datePicker: {
-    marginTop: -40
+    marginTop: -100
   }
 });
