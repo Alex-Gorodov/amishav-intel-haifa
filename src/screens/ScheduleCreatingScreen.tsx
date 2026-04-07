@@ -365,7 +365,9 @@ const styles = StyleSheet.create({
   },
   generateButton: {
     minWidth: 200,
+    // borderRadius: 20,
     backgroundColor: Colors.mainDark,
+
   },
   modalOverlay: {
     flex: 1,

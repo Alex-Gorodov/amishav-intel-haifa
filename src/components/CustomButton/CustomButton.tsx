@@ -196,7 +196,7 @@ export default function CustomButton({
       onPress={onHandle}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={style}
+      style={[style, { borderRadius: 20 }]}
     >
       <Animated.View
         style={[

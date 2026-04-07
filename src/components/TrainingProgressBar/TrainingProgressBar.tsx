@@ -52,6 +52,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
+    setDatePickerOpened(false)
   };
 
   const [isDatePickerOpened, setDatePickerOpened] = useState(false)
@@ -80,10 +81,28 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
           <Text style={styles.label}>בתוקף עד:</Text>
           <Text style={styles.value}>{dateOfDeadline === 0 ? 'אין מידע' : new Date(dateOfDeadline).toLocaleDateString()}</Text>
 
-          <CustomButton style={{}} title={isDatePickerOpened ? 'שמור' : 'לחדש'} onHandle={() => setDatePickerOpened(!isDatePickerOpened)}/>
+          <CustomButton
+            style={{marginVertical: 5}}
+            title={isDatePickerOpened ? 'שמור' : 'לחדש'}
+            onHandle={() => {
+              if (isDatePickerOpened && user && date) {
+                dispatch(updateTrainingExecutionDate({
+                  userId: user.id,
+                  training,
+                  date,
+                }));
+
+                updateTrainingDate(user.id, trainingKey, date);
+
+                setDatePickerOpened(false);
+              } else {
+                setDatePickerOpened(true);
+              }
+            }}
+          />
 
           {
-            isDatePickerOpened && user
+            isDatePickerOpened
             &&
             <DateTimePicker
               value={date}
@@ -94,16 +113,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
               accentColor={Colors.primary}
               onChange={(e, newDate) => {
                 if (!newDate) return;
-
                 setDate(newDate);
-
-                dispatch(updateTrainingExecutionDate({
-                  userId: user.id,
-                  training: training,
-                  date: newDate
-                }));
-
-                updateTrainingDate(user.id, trainingKey, newDate)
               }}
             />
           }
