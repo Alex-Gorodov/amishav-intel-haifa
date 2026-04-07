@@ -54,7 +54,8 @@ export default function DocumentsScreen() {
                   setMenuOpened={(v) => setMenuOpenedFor(v ? d.name : null)}
                 />
                 <Text style={{ textAlign: 'center', marginTop: 8 }}>
-                  {getShortFileName(d.name, 16)}
+                  {/* {getShortFileName(d.name, 16)} */}
+                  {d.name}
                 </Text>
               </View>
 

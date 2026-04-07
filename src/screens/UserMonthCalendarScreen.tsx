@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import useUser from '../hooks/useUser';
+import { Colors, DAYS } from '../constants';
 
 const { width } = Dimensions.get('window');
 const NUM_DAYS_IN_WEEK = 7;
@@ -94,6 +95,16 @@ const daysInMonth = useMemo(() => {
       </View>
 
       <View style={styles.calendar}>
+        {
+          DAYS.map((d) => (
+            <View style={styles.day}>
+              <Text style={styles.dayOfWeek}>{d}</Text>
+            </View>
+          ))
+        }
+      </View>
+
+      <View style={styles.calendar}>
         {daysInMonth.map((date, index) => {
           if (!date) {
             return <View key={index} style={styles.day} />;
@@ -159,73 +170,77 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 
-calendar: {
-  width: '100%',
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  justifyContent: 'flex-start', // чтобы отступы правильно применялись
-  borderBottomWidth: 1,
-  borderColor: '#eee',
-},
-
-
-  day: {
-  width: DAY_SIZE,
-  height: DAY_SIZE,
-  justifyContent: 'center',
-  alignItems: 'center',
-  margin: DAY_MARGIN,
-  borderWidth: 0.5,
-  borderColor: '#eee',
-},
-
-
-  workDay: {
-    backgroundColor: '#DFF5E1', // зелёный
+  calendar: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start', // чтобы отступы правильно применялись
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
 
-  selectedDay: {
-    borderWidth: 2,
-    borderColor: '#4BB543',
+
+    day: {
+    width: DAY_SIZE,
+    height: DAY_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: DAY_MARGIN,
+    borderWidth: 0.5,
+    borderColor: '#eee',
   },
 
-  dayText: {
-    fontWeight: '600',
+
+    workDay: {
+      backgroundColor: '#DFF5E1', // зелёный
+    },
+
+    selectedDay: {
+      borderWidth: 2,
+      borderColor: '#4BB543',
+    },
+
+    dayText: {
+      fontWeight: '600',
+    },
+
+    dayOfWeek: {
+      fontWeight: 400,
+    },
+
+    details: {
+      flex: 1,
+      padding: 16,
+    },
+
+    placeholder: {
+      textAlign: 'center',
+      color: '#999',
+      marginTop: 24,
+    },
+
+    detailTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+
+    monthNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    backgroundColor: '#fafafa',
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
 
-  details: {
-    flex: 1,
-    padding: 16,
-  },
-
-  placeholder: {
-    textAlign: 'center',
-    color: '#999',
-    marginTop: 24,
-  },
-
-  detailTitle: {
+  monthLabel: {
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 8,
+    marginHorizontal: 12,
+    minWidth: 140,
+    textAlign: 'center',
   },
-
-  monthNav: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingVertical: 10,
-  backgroundColor: '#fafafa',
-  borderBottomWidth: 1,
-  borderColor: '#eee',
-},
-
-monthLabel: {
-  fontSize: 16,
-  fontWeight: '700',
-  marginHorizontal: 12,
-  minWidth: 140,
-  textAlign: 'center',
-},
 
 });

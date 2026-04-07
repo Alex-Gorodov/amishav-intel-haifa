@@ -48,3 +48,5 @@ export const MONTHS = [
   'נובמבר',
   'דצמבר'
 ]
+
+export const DAYS = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];

@@ -95,7 +95,7 @@ export default function SalaryScreen() {
     </>
   );
 
-  const hours = getMonthlyHours(user?.shifts ?? []).toFixed(2);
+  const hours = getMonthlyHours(user?.shifts ?? [], displayDate.getMonth(), displayDate.getFullYear()).toFixed(2);
 
   const totalHours = getHoursString(Number(hours));
 
