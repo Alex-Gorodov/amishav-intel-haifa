@@ -196,7 +196,7 @@ export default function CustomButton({
       onPress={onHandle}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[{ flex: 1 }, style]}
+      style={style}
     >
       <Animated.View
         style={[
@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    minHeight: 44
   },
   wrapper: {
     width: '100%',

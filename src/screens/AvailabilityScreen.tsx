@@ -164,12 +164,12 @@ export default function AvailabilityScreen() {
 
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
         <CustomButton
-          style={{flex: 0.1}}
+          style={{flex: 0.25}}
           title={<Ionicons name="chevron-back" size={20} />}
           onHandle={handleNextWeek}
         />
         <CustomButton
-          style={{ flex: 4 }}
+          style={{ flex: 1 }}
           title={
             isSending
               ? <ActivityIndicator color={Colors.mainDark} />
@@ -181,7 +181,7 @@ export default function AvailabilityScreen() {
           disabled={isSending}
         />
         <CustomButton
-          style={{flex: 0.1}}
+          style={{flex: 0.25}}
           title={<Ionicons name="chevron-forward" size={20} />}
           onHandle={handlePrevWeek}
           disabled={isPrevWeekBlocked}
