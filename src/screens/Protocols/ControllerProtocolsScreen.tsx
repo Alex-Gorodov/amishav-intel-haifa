@@ -1,5 +1,5 @@
 import ProtocolGroup from '../../components/ProtocolGroup/ProtocolGroup';
-import { Protocols } from '../../constants/Protocols';
+import { ProtocolGroups } from '../../constants/Protocols';
 
 export default function ControllerProtocolsScreen() {
   const image = require('../../../assets/images/protocols/occ-cover.webp');
@@ -8,7 +8,7 @@ export default function ControllerProtocolsScreen() {
     <ProtocolGroup
       title='בקרה'
       image={image}
-      protocols={Protocols.controller}
+      protocols={ProtocolGroups.controller}
     />
   )
 }

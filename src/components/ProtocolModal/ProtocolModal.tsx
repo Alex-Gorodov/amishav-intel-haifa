@@ -7,7 +7,6 @@ import {
   Image,
   ScrollView,
   StyleSheet,
-  ImageSourcePropType,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants';
@@ -52,9 +51,15 @@ export default function ProtocolModal({
             <Text style={styles.title}>{protocol.title}</Text>
 
             {/* Header image */}
-            {protocol.headerImage && (
+            {/* {protocol.headerImage !== undefined && (
               <Image
                 source={protocol.headerImage}
+                style={styles.headerImage}
+              />
+            )} */}
+            {protocol.headerImage && protocol.headerImage.trim() !== '' && (
+              <Image
+                source={{ uri: protocol.headerImage }}
                 style={styles.headerImage}
               />
             )}
@@ -69,7 +74,7 @@ export default function ProtocolModal({
                 {protocol.images.map((img, index) => (
                   <Image
                     key={index}
-                    source={img}
+                    source={{uri: img}}
                     style={styles.galleryImage}
                   />
                 ))}

@@ -1,4 +1,4 @@
-import { Protocols } from '../../constants/Protocols';
+import { ProtocolGroups } from '../../constants/Protocols';
 import ProtocolGroup from '../../components/ProtocolGroup/ProtocolGroup';
 
 export default function EmergencyProtocolsScreen() {
@@ -8,7 +8,7 @@ export default function EmergencyProtocolsScreen() {
     <ProtocolGroup
       title='חירום'
       image={image}
-      protocols={Protocols.emergency}
+      protocols={ProtocolGroups.emergency}
     />
   )
 }
