@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Colors, MONTHS } from '../../constants';
-
+import { fetchHolidaysByMonth } from '../../store/api/fetchShabbatTimes';
+import { Holiday } from '../../types/ShabbatTimes';
 interface AvailabilityButtonProps {
   date: Date;
   statuses: boolean[];
@@ -9,15 +10,40 @@ interface AvailabilityButtonProps {
 }
 
 export default function AvailabilityButton({ date, statuses, onChange }: AvailabilityButtonProps) {
-  const dateToSet = `${date.toLocaleDateString('he-IL', { weekday: 'short' })}, ${date.getDate()} ${MONTHS[date.getMonth()]}`;
+  // const dateToSet = `${date.toLocaleDateString('he-IL', { weekday: 'short' })}, ${date.getDate()} ${MONTHS[date.getMonth()]}`;
 
   const [selected, setSelected] = useState<boolean[]>([false, false, false]);
+  const [holiday, setHoliday] = useState<Holiday | null>(null);
 
   useEffect(() => {
     if (statuses && statuses.length === 3) {
       setSelected(statuses.map(s => s ?? false));
     }
   }, [statuses]);
+
+  useEffect(() => {
+  const load = async () => {
+    const holidays = await fetchHolidaysByMonth(date);
+
+    const found = holidays.find(h => {
+      return (
+        h.date.getFullYear() === date.getFullYear() &&
+        h.date.getMonth() === date.getMonth() &&
+        h.date.getDate() === date.getDate()
+      );
+    });
+
+    setHoliday(found ?? null);
+  };
+
+  load();
+}, [date]);
+
+  const baseDate = `${date.toLocaleDateString('he-IL', { weekday: 'short' })}, ${date.getDate()} ${MONTHS[date.getMonth()]}`;
+
+  const dateToSet = holiday
+    ? `${baseDate} • ${holiday.title}`
+    : baseDate;
 
   const toggle = (index: number) => {
     const next = [...selected];
@@ -46,7 +72,12 @@ export default function AvailabilityButton({ date, statuses, onChange }: Availab
   };
 
   return (
-    <View style={styles.wrapper}>
+     <View
+        style={[
+          styles.wrapper,
+          holiday && styles.holidayWrapper
+        ]}
+      >
       <Text style={styles.dateText}>{dateToSet}</Text>
       <View style={styles.card}>
         {renderButton('לילה', 2, { borderBottomLeftRadius: 20 })}
@@ -62,6 +93,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.mainDark,
     borderRadius: 20,
     overflow: 'hidden',
+  },
+  holidayWrapper: {
+    borderTopWidth: 6,
+    borderTopColor: '#f59e0b', // amber
   },
   dateText: {
     padding: 4,

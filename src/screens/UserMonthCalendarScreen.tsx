@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import useUser from '../hooks/useUser';
-import { DAYS } from '../constants';
+import { Colors, DAYS } from '../constants';
 import { fetchHolidaysByMonth } from '../store/api/fetchShabbatTimes';
 import { Holiday } from '../types/ShabbatTimes';
 
@@ -72,9 +72,6 @@ export default function UserMonthCalendarScreen() {
     return days;
   }, [displayDate]);
 
-
-  const selectedShift = selectedDate ? shiftsByDate[selectedDate] : null;
-
   const [holidays, setHolidays] = useState<Holiday[]>([]);
 
   useEffect(() => {
@@ -94,6 +91,13 @@ export default function UserMonthCalendarScreen() {
         h.date.getDate() === date.getDate()
       );
     });
+  };
+
+  const cleanHolidayTitle = (title: string) => {
+    return title
+      .replace(/ [א-ת]׳/g, '') // убирает "א׳", "ב׳"
+      .replace(/\(.*\)/, '')   // убирает "(הושענא רבה)"
+      .trim();
   };
 
   const holiday = selectedDate
@@ -140,6 +144,8 @@ export default function UserMonthCalendarScreen() {
           const key = getIsoLocalDateKey(date);
           const hasShift = !!shiftsByDate[key];
           const isSelected = key === selectedDate;
+          const holidayForDay = getHolidayForDate(date);
+
 
           return (
             <Pressable
@@ -152,6 +158,8 @@ export default function UserMonthCalendarScreen() {
               onPress={() => setSelectedDate(key)}
             >
               <Text style={styles.dayText}>{date.getDate()}</Text>
+              {holidayForDay && <View style={styles.holidayDot} />}
+              {/* {holidayForDay && <View style={styles.holidayLine} />} */}
             </Pressable>
           );
         })}
@@ -159,6 +167,12 @@ export default function UserMonthCalendarScreen() {
 
       {/* DETAILS */}
         <View style={styles.details}>
+          {
+            holiday && (
+            <Text style={styles.holidayText}>
+              {cleanHolidayTitle(holiday.title)}
+            </Text>
+          )}
           {(() => {
             if (!selectedDate) {
               return <Text style={styles.placeholder}>בחר יום בלוח השנה</Text>;
@@ -183,12 +197,6 @@ export default function UserMonthCalendarScreen() {
               </View>
             );
           })()}
-          {
-            holiday && (
-            <Text style={styles.holidayText}>
-              {holiday.title}
-            </Text>
-          )}
         </View>
 
     </View>
@@ -205,13 +213,12 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start', // чтобы отступы правильно применялись
+    justifyContent: 'flex-start',
     borderBottomWidth: 1,
     borderColor: '#eee',
   },
 
-
-    day: {
+  day: {
     width: DAY_SIZE,
     height: DAY_SIZE,
     justifyContent: 'center',
@@ -221,42 +228,52 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
   },
 
+  holidayDot: {
+    position: 'absolute',
+    bottom: 6,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.primaryLight,
+  },
 
-    workDay: {
-      backgroundColor: '#DFF5E1', // зелёный
-    },
+  workDay: {
+    backgroundColor: '#DFF5E1',
+  },
 
-    selectedDay: {
-      borderWidth: 2,
-      borderColor: '#4BB543',
-    },
+  selectedDay: {
+    borderWidth: 2,
+    borderColor: '#4BB543',
+  },
 
-    dayText: {
-      fontWeight: '600',
-    },
+  dayText: {
+    fontWeight: '600',
+  },
 
-    dayOfWeek: {
-      fontWeight: 400,
-    },
+  dayOfWeek: {
+    fontWeight: 400,
+  },
 
-    details: {
-      flex: 1,
-      padding: 16,
-    },
+  details: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fafafa',
 
-    placeholder: {
-      textAlign: 'center',
-      color: '#999',
-      marginTop: 24,
-    },
+  },
 
-    detailTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-      marginBottom: 8,
-    },
+  placeholder: {
+    textAlign: 'center',
+    color: '#999',
+    marginTop: 24,
+  },
 
-    monthNav: {
+  detailTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+
+  monthNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -275,10 +292,10 @@ const styles = StyleSheet.create({
   },
 
   holidayText: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#b45309',
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: 12,
   },
 
 });

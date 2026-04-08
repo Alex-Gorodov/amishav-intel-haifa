@@ -34,57 +34,11 @@ export async function fetchShabbatTimes(friday: Date): Promise<ShabbatTimes> {
   }
 }
 
-// export async function fetchHolidayPeriods(friday: Date): Promise<Holiday[]> {
-//   const year = friday.getFullYear();
-//   const month = friday.getMonth() + 1;
-
-//   const url = `https://www.hebcal.com/hebcal?cfg=json&geonameid=294801&year=${year}&month=${month}&maj=on`;
-
-//   try {
-//     const res = await fetch(url);
-//     const data = await res.json();
-
-//     const periods: Holiday[] = [];
-
-//     let currentStart: Date | null = null;
-//     let currentTitle = '';
-
-//     data.items?.forEach((item: any) => {
-//       if (item.category === 'holiday') {
-//         const date = new Date(item.date);
-
-//         if (item.title.includes('Erev')) {
-//           currentStart = date;
-//           currentTitle = item.title;
-//         } else if (currentStart) {
-//           const end = new Date(date);
-//           end.setHours(20, 0, 0);
-
-//           periods.push({
-//             start: currentStart,
-//             end,
-//             title: currentTitle,
-//           });
-
-//           currentStart = null;
-//         }
-//       }
-//     });
-
-//     return periods;
-
-//   } catch (e) {
-//     console.error('Error fetching holiday periods', e);
-//     return [];
-//   }
-// }
-
-
 export async function fetchHolidaysByMonth(date: Date): Promise<Holiday[]> {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
 
-  const url = `https://www.hebcal.com/hebcal?cfg=json&geonameid=294801&year=${year}&month=${month}&maj=on&min=on`;
+  const url = `https://www.hebcal.com/hebcal?cfg=json&geonameid=294801&year=${year}&month=${month}&maj=on&min=on&lg=he`;
 
   try {
     const res = await fetch(url);
@@ -95,7 +49,7 @@ export async function fetchHolidaysByMonth(date: Date): Promise<Holiday[]> {
     data.items?.forEach((item: any) => {
       if (item.category === "holiday") {
         holidays.push({
-          title: item.title,
+          title: item.hebrew || item.title,
           date: new Date(item.date),
         });
       }
