@@ -6,6 +6,7 @@ export default function ControllerProtocolsScreen() {
 
   return (
     <ProtocolGroup
+      title='בקרה'
       image={image}
       protocols={Protocols.controller}
     />

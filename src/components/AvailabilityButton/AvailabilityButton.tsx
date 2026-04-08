@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   holidayWrapper: {
-    borderTopWidth: 6,
+    borderTopWidth: 4,
     borderTopColor: '#f59e0b', // amber
   },
   dateText: {

@@ -6,6 +6,7 @@ export default function SecurityProtocolsScreen() {
 
   return (
     <ProtocolGroup
+      title='ביטחון'
       image={image}
       protocols={Protocols.security}
     />

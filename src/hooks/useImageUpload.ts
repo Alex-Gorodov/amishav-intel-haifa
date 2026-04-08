@@ -20,7 +20,7 @@ export const useImageUpload = (
         formData.append('file', { uri, type, name } as any);
         formData.append('upload_preset', 'ml_default');
 
-        const res = await fetch('https://api.cloudinary.com/v1_1/dluedowst/image/upload', {
+        const res = await fetch('https://api.cloudinary.com/v1_1/didctp0hu/image/upload', {
           method: 'POST',
           body: formData,
         });

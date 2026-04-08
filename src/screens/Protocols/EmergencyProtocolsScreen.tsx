@@ -6,6 +6,7 @@ export default function EmergencyProtocolsScreen() {
 
   return (
     <ProtocolGroup
+      title='חירום'
       image={image}
       protocols={Protocols.emergency}
     />
