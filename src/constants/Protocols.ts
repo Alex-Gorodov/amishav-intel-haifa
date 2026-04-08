@@ -4,6 +4,10 @@ export const ProtocolGroups = {
       id: 'emergencyShowerProtocol',
       title: 'מקלחת חירום',
     },
+    {
+      id: 'test',
+      title: 'test-test',
+    },
   ],
 
   controller: [
