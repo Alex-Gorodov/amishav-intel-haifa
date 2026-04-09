@@ -20,6 +20,7 @@ import { Colors } from '../../constants';
 import ScheduleStackNavigator from '../ScheduleNavigator/ScheduleNavigator';
 import CustomTabBar from '../../components/CustomTabBar/CustomTabBar';
 import { Dispatch, UnknownAction } from '@reduxjs/toolkit';
+import { fetchProtocolsPreview } from '../../store/api/fetchProtocolsPreview.api';
 
 
 export default function Navigation() {
@@ -31,7 +32,7 @@ export default function Navigation() {
 
   useEffect(() => {
     fetchUsers(dispatch);
-    fetchprotocolsPreview(dispatch);
+    fetchProtocolsPreview(dispatch);
     fetchSwapRequests(dispatch);
     fetchGiveRequests(dispatch);
   }, [dispatch]);

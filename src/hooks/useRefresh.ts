@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUsers } from "../store/api/fetchUsers.api";
 import { fetchSwapRequests, fetchGiveRequests } from "../store/api/fetchRequests.api";
-import { fetchProtocolById } from "../store/api/fetchProtocolById.api";
 import { fetchProtocolsPreview } from "../store/api/fetchProtocolsPreview.api";
 
 export default function useRefresh() {
