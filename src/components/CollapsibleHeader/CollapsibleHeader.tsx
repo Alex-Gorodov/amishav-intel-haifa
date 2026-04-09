@@ -32,12 +32,12 @@ export default function CollapsibleHeader({ image, title, maxHeight = 240, minHe
       <Animated.ScrollView
         style={{ flex: 1 }}
         scrollEventThrottle={16}
+        contentContainerStyle={{ paddingTop: maxHeight }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
         )}
       >
-        <View style={{ height: maxHeight }} />
         {children}
       </Animated.ScrollView>
 

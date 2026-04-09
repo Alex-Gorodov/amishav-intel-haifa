@@ -64,6 +64,9 @@ export default function ProtocolModal({
               />
             )}
 
+            {/* Content */}
+            <Text style={styles.text}>{protocol.content}</Text>
+
             {/* Gallery images */}
             {protocol.images && protocol.images.length > 0 && (
               <ScrollView
@@ -80,9 +83,6 @@ export default function ProtocolModal({
                 ))}
               </ScrollView>
             )}
-
-            {/* Content */}
-            <Text style={styles.text}>{protocol.content}</Text>
           </ScrollView>
         </View>
       </View>
@@ -127,10 +127,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   galleryImage: {
-    width: 120,
-    height: 120,
-    resizeMode: 'cover',
+    height: 300,
+    width: 300,
+    resizeMode: 'contain',
     marginRight: 10,
+    marginTop: 20,
     borderRadius: 10,
   },
   text: {

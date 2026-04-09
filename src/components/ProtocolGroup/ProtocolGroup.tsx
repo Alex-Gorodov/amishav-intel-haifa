@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native'
 import React, { useState, useRef } from 'react'
 import CollapsibleHeader from '../CollapsibleHeader/CollapsibleHeader'
 import { Protocol, ProtocolPreview } from '../../types/Protocol'
@@ -70,7 +70,8 @@ export default function ProtocolGroup({image, title, protocols}: ProtocolGroupPr
 
 const styles = StyleSheet.create({
   container: {
-    padding: 8,
+    padding: 18,
     gap: 8,
+    paddingBottom: 100,
   },
 })

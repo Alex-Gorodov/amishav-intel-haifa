@@ -19,7 +19,7 @@ export const fetchProtocolById = async (id: string): Promise<Protocol | null> =>
       title: data.title,
       content: data.content,
       headerImage: data.headerImage || null,
-      images: data.images?.map((url: string) => ({ uri: url })) ?? [],
+      images: data.images ?? [],
     };
 
   } catch (e) {

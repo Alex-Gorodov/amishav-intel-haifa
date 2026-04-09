@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native';
 import { getIsoLocalDateKey } from '../utils/getIsoLocalDateKey';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import useUser from '../hooks/useUser';
@@ -95,15 +95,14 @@ export default function UserMonthCalendarScreen() {
 
   const cleanHolidayTitle = (title: string) => {
     return title
-      .replace(/ [א-ת]׳/g, '') // убирает "א׳", "ב׳"
-      .replace(/\(.*\)/, '')   // убирает "(הושענא רבה)"
+      .replace(/ [א-ת]׳/g, '')
+      .replace(/\(.*\)/, '')
       .trim();
   };
 
   const holiday = selectedDate
     ? getHolidayForDate(new Date(selectedDate))
     : null;
-
 
   return (
     <View style={styles.container}>
