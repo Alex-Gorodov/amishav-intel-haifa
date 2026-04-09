@@ -7,7 +7,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AvailabilityScreen from '../../screens/AvailabilityScreen';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { fetchUsers } from '../../store/api/fetchUsers.api';
-import ScheduleScreen from '../../screens/ScheduleScreen';
 import { useDispatch, useSelector } from 'react-redux';
 import SalaryScreen from '../../screens/SalaryScreen';
 import { RootState } from '../../store/root-reducer';
@@ -20,6 +19,7 @@ import { signOut } from "firebase/auth";
 import { Colors } from '../../constants';
 import ScheduleStackNavigator from '../ScheduleNavigator/ScheduleNavigator';
 import CustomTabBar from '../../components/CustomTabBar/CustomTabBar';
+import { Dispatch, UnknownAction } from '@reduxjs/toolkit';
 
 
 export default function Navigation() {
@@ -31,6 +31,7 @@ export default function Navigation() {
 
   useEffect(() => {
     fetchUsers(dispatch);
+    fetchprotocolsPreview(dispatch);
     fetchSwapRequests(dispatch);
     fetchGiveRequests(dispatch);
   }, [dispatch]);
@@ -195,3 +196,7 @@ export default function Navigation() {
       </Tab.Navigator>
   )
 }
+function fetchprotocolsPreview(dispatch: Dispatch<UnknownAction>) {
+  throw new Error('Function not implemented.');
+}
+

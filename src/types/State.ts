@@ -1,4 +1,5 @@
 import { store } from "../store";
+import { ProtocolPreview } from "./Protocol";
 import { GiveShiftRequest, SwapShiftRequest } from "./Request";
 import { User } from "./User";
 
@@ -9,6 +10,7 @@ export type AppDispatch = typeof store.dispatch;
 
 export type DataState = {
   users: User[];
+  protocolsPreview: ProtocolPreview[];
   isUsersLoading: boolean;
   swapRequests: SwapShiftRequest[];
   giveRequests: GiveShiftRequest[];

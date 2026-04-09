@@ -10,5 +10,6 @@ export type Protocol = {
 
 export type ProtocolPreview = {
   id: string;
+  group: 'controller' | 'emergency' | 'security';
   title: string;
 };

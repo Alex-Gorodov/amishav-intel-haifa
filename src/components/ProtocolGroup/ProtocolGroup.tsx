@@ -4,7 +4,7 @@ import CollapsibleHeader from '../CollapsibleHeader/CollapsibleHeader'
 import { Protocol, ProtocolPreview } from '../../types/Protocol'
 import ProtocolItemButton from '../ProtocolItemButton/ProtocolItemButton';
 import ProtocolModal from '../ProtocolModal/ProtocolModal';
-import { fetchProtocolById } from '../../store/api/fetchProtocolById';
+import { fetchProtocolById } from '../../store/api/fetchProtocolById.api';
 
 interface ProtocolGroupProps {
   image: any;
@@ -46,11 +46,6 @@ export default function ProtocolGroup({image, title, protocols}: ProtocolGroupPr
       <View style={styles.container}>
         {
           protocols.map((protocol) => (
-            // <ProtocolItemButton
-            //   key={protocol.title}
-            //   title={protocol.title}
-            //   onHandle={() => setActiveProtocol(protocol)}
-            // />
             <ProtocolItemButton
               key={protocol.id}
               title={protocol.title}
@@ -58,12 +53,6 @@ export default function ProtocolGroup({image, title, protocols}: ProtocolGroupPr
             />
           ))
         }
-
-        {/* <ProtocolModal
-          visible={!!activeProtocol}
-          protocol={activeProtocol}
-          onClose={() => setActiveProtocol(null)}
-        /> */}
 
         {loading ? (
           <ActivityIndicator />

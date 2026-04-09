@@ -6,9 +6,12 @@ import { Timestamp } from "firebase/firestore";
 import { GiveShiftRequest, RequestStatus, SwapShiftRequest } from "../types/Request";
 import { Shift } from "../types/Shift";
 import { Training } from "../types/Training";
+import { ProtocolPreview } from "../types/Protocol";
 
 export const setUsersDataLoading = createAction<{isUsersDataLoading: boolean}>('data/setUsersDataLoading');
 export const loadUsers = createAction<{users: User[]}>('data/loadUsers');
+
+export const loadProtocolsPreview = createAction<{protocolsPreview: ProtocolPreview[]}>('data/loadProtocolsPreview')
 
 export const setRequestsDataLoading = createAction<{isRequestsDataLoading: boolean}>('data/setRequestsDataLoading');
 export const loadRequests = createAction<{type: 'swap' | 'give', requests: SwapShiftRequest[] | GiveShiftRequest[]}>('data/loadRequests');
