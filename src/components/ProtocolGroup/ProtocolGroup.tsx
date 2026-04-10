@@ -1,10 +1,11 @@
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Animated, FlatList, RefreshControl, ScrollView, StyleSheet } from 'react-native'
 import React, { useState, useRef } from 'react'
 import CollapsibleHeader from '../CollapsibleHeader/CollapsibleHeader'
 import { Protocol, ProtocolPreview } from '../../types/Protocol'
 import ProtocolItemButton from '../ProtocolItemButton/ProtocolItemButton';
 import ProtocolModal from '../ProtocolModal/ProtocolModal';
 import { fetchProtocolById } from '../../store/api/fetchProtocolById.api';
+import useRefresh from '../../hooks/useRefresh';
 
 interface ProtocolGroupProps {
   image: any;
@@ -17,6 +18,7 @@ export default function ProtocolGroup({image, title, protocols}: ProtocolGroupPr
   const [loading, setLoading] = useState(false);
 
   const cacheRef = useRef<Record<string, Protocol>>({});
+  const refresh = useRefresh();
 
   const openProtocol = async (id: string) => {
     if (cacheRef.current[id]) {
@@ -38,12 +40,12 @@ export default function ProtocolGroup({image, title, protocols}: ProtocolGroupPr
 
   return (
     <CollapsibleHeader
-          image={image}
-          title={title}
-          maxHeight={240}
-          minHeight={80}
-        >
-      <View style={styles.container}>
+        image={image}
+        title={title}
+        maxHeight={240}
+        minHeight={80}
+      >
+      <ScrollView style={styles.container}>
         {
           protocols.map((protocol) => (
             <ProtocolItemButton
@@ -63,7 +65,7 @@ export default function ProtocolGroup({image, title, protocols}: ProtocolGroupPr
             onClose={() => setActiveProtocol(null)}
           />
         )}
-      </View>
+      </ScrollView>
     </CollapsibleHeader>
   )
 }

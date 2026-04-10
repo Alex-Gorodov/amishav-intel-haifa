@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Animated, Dimensions, View, ImageBackground, Text, StyleSheet } from "react-native";
+import { Animated, Dimensions, View, ImageBackground, Text, StyleSheet, RefreshControl } from "react-native";
 import { Colors } from "../../constants";
 
 interface CollapsibleHeaderProps {

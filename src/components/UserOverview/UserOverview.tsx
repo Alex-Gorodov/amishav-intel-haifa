@@ -14,7 +14,6 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { fetchUsers } from '../../store/api/fetchUsers.api';
 import { useDispatch } from 'react-redux';
-import { getWeekKeyForShift } from '../../utils/getWeekKeyForShift';
 import { setError, setSuccess } from '../../store/actions';
 import { ErrorMessages, SuccessMessages } from '../../constants/Messages';
 import { getShabbatHoursString } from '../../utils/getShabbatHours';

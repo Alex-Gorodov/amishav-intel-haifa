@@ -9,8 +9,12 @@ interface ProtocolItemButtonProps {
 
 export default function ProtocolItemButton({title, onHandle}: ProtocolItemButtonProps) {
   return (
-    <CustomButton title={title} onHandle={onHandle}/>
+    <CustomButton style={styles.button} title={title} onHandle={onHandle}/>
   )
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  button: {
+    marginBottom: 8
+  }
+})

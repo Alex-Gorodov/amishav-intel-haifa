@@ -24,7 +24,7 @@ export default function PressableCard({title, content, style, onHandle}: Pressab
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: '48%',
+    // width: '48%',
     minHeight: 120,
     backgroundColor: Colors.mainLight,
     borderRadius: 12,
@@ -40,6 +40,5 @@ const styles = StyleSheet.create({
   },
   content: {
     color: Colors.mainDark,
-
   },
 })
