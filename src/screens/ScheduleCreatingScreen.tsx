@@ -186,67 +186,99 @@ export default function ScheduleCreatingScreen() {
             />
           </View>
         }
-        renderItem={({ item: u }) => (
-        <View key={`${u.id}-availability`} style={styles.userCard}>
-          <Text style={styles.userName}>
-            {u.firstName + ' ' + u.secondName}
-          </Text>
+        renderItem={({ item: u }) => {
+          const commentsForWeek = u.availability
+            .filter(av =>
+              week.some(d => toISODate(av.date.toDate()) === d.iso)
+            )
+            .filter(av => av.comment && av.comment.trim() !== '')
+            .map(av => ({
+              date: av.date.toDate(),
+              comment: av.comment,
+            }));
+          return (
+            <View key={`${u.id}-availability`} style={styles.userCard}>
+              <Text style={styles.userName}>
+                {u.firstName + ' ' + u.secondName}
+              </Text>
 
-          <View style={styles.rolesList}>
-            <Text style={styles.roleItem}>
-              {u.roles
-                .map((r) => Roles.find((role) => role.value === r)?.label || r)
-                .join(', ')}
-            </Text>
-          </View>
+              <View style={styles.userCardLine}>
+                <Text style={styles.userCardtext}>
+                  {u.roles
+                    .map((r) => Roles.find((role) => role.value === r)?.label || r)
+                    .join(', ')}
+                </Text>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.table}>
-
-              <View style={styles.columnLabels}>
-                <Text style={styles.labelCell}>תאריך</Text>
-                <Text style={styles.labelCell}>בוקר</Text>
-                <Text style={styles.labelCell}>צהריים</Text>
-                <Text style={styles.labelCell}>לילה</Text>
               </View>
 
-              <View style={styles.daysRow}>
-                {week.map((d) => {
-                  const key = `${u.id}-${d.date.getTime()}`;
-                  // ищем availability на этот день
-                  const a =
-                    u.availability.find(av => toISODate(av.date.toDate()) === d.iso) ||
-                    { statuses: Array(3).fill(null), date: d.date };
-
-                  return (
-                    <View key={key} style={[styles.dayColumn, { minWidth: columnWidth }]}>
-                      <View style={styles.dayCell}>
-                        <Text style={styles.dateText}>{d.date.getDate()}</Text>
+              {commentsForWeek.length > 0 && (
+                <View style={styles.userCardLine}>
+                  <Text style={styles.userCardtext}>הערות:</Text>
+                  <View style={{ marginTop: 8 }}>
+                    {commentsForWeek.map((c, i) => (
+                      <View key={i} style={styles.commentByDate}>
+                        <Text style={styles.userCardtext}>
+                          :
+                          {c.date.toLocaleDateString('he-IL', {
+                            day: '2-digit',
+                            month: '2-digit'
+                          })}
+                        </Text>
+                        <Text style={styles.userCardtext}> {c.comment}</Text>
                       </View>
+                    ))}
+                  </View>
+                </View>
+              )}
 
-                      {(a.statuses && a.statuses.length > 0
-                        ? a.statuses
-                        : Array(3).fill(null)
-                      ).map((s, i) => (
-                        <View key={i} style={styles.statusCell}>
-                          {s === true ? (
-                            <Ionicons name="checkmark-outline" size={20} />
-                          ) : s === false ? (
-                            <Ionicons name="close-outline" size={20} />
-                          ) : (
-                            <Text style={styles.statusText}>-</Text>
-                          )}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.table}>
+
+                  <View style={styles.columnLabels}>
+                    <Text style={styles.labelCell}>תאריך</Text>
+                    <Text style={styles.labelCell}>בוקר</Text>
+                    <Text style={styles.labelCell}>צהריים</Text>
+                    <Text style={styles.labelCell}>לילה</Text>
+                  </View>
+
+                  <View style={styles.daysRow}>
+                    {week.map((d) => {
+                      const key = `${u.id}-${d.date.getTime()}`;
+
+                      const a =
+                        u.availability.find(av => toISODate(av.date.toDate()) === d.iso) ||
+                        { statuses: Array(3).fill(null), date: d.date };
+
+                      return (
+                        <View key={key} style={[styles.dayColumn, { minWidth: columnWidth }]}>
+                          <View style={styles.dayCell}>
+                            <Text style={styles.dateText}>{d.date.getDate()}</Text>
+                          </View>
+
+                          {(a.statuses && a.statuses.length > 0
+                            ? a.statuses
+                            : Array(3).fill(null)
+                          ).map((s, i) => (
+                            <View key={i} style={styles.statusCell}>
+                              {s === true ? (
+                                <Ionicons name="checkmark-outline" size={20} />
+                              ) : s === false ? (
+                                <Ionicons name="close-outline" size={20} />
+                              ) : (
+                                <Text style={styles.statusText}>-</Text>
+                              )}
+                            </View>
+                          ))}
                         </View>
-                      ))}
-                    </View>
-                  );
-                })}
-              </View>
+                      );
+                    })}
+                  </View>
 
+                </View>
+              </ScrollView>
             </View>
-          </ScrollView>
-        </View>
-      )}
+          )
+        }}
     />
 
     <Modal
@@ -303,15 +335,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.mainDark,
   },
-  rolesList: {
-    flexDirection: 'row-reverse',
+  userCardLine: {
+    flexDirection: 'column',
     marginBottom: 4,
     paddingRight: 4,
   },
-  roleItem: {
+  userCardtext: {
     textAlign: 'right',
     fontSize: 15,
     color: Colors.mainDark,
+  },
+  commentByDate: {
+    flexDirection: 'row-reverse'
   },
   table: {
     flexDirection: 'row-reverse',
@@ -361,13 +396,10 @@ const styles = StyleSheet.create({
   },
   headerButtonContainer: {
     padding: 16,
-    // alignItems: 'center',
   },
   generateButton: {
     minWidth: 200,
-    // borderRadius: 20,
     backgroundColor: Colors.mainDark,
-
   },
   modalOverlay: {
     flex: 1,

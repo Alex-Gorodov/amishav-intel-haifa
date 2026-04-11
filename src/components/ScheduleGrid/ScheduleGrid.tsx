@@ -31,12 +31,6 @@ import { Ionicons } from '@expo/vector-icons';
     onCellPress?: (rowId: string, dateKey: string, value: string, row?: ShiftRow ) => void;
   };
 
-  // This component implements a table with:
-  // - fixed top header (dates)
-  // - fixed right column (posts / primary post per row)
-  // - scrollable main grid both horizontally and vertically
-  // Implementation: horizontal ScrollView wraps the main grid (header + FlatList). The header and main horizontal scroll are synchronized.
-  // The right column is a separate FlatList; vertical scroll is synchronized with the main FlatList.
 
   export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnWidth, onCellPress }: Props) {
     const user = useUser();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
+import { View, FlatList, ActivityIndicator, RefreshControl, StyleSheet, Pressable } from 'react-native';
 import AvailabilityButton from '../components/AvailabilityButton/AvailabilityButton';
 import { getWeekDates } from '../utils/dateUtils';
 import CustomButton from '../components/CustomButton/CustomButton';
@@ -25,6 +25,9 @@ export default function AvailabilityScreen() {
   const [week, setWeek] = useState(getWeekDates(currentWeekStart, 0, 'he-IL'));
 
   const [isPrevWeekBlocked, setPrevWeekBlocked] = useState(true);
+  const [comments, setComments] = useState<string[]>(
+    week.map(() => '')
+  );
 
   const [weekAvailabilityState, setWeekAvailabilityState] = useState<boolean[][]>(
     week.map((day, i) => user?.availability?.[i]?.statuses ?? [true, true, true])
@@ -47,6 +50,16 @@ export default function AvailabilityScreen() {
   });
 
   setWeekAvailabilityState(newReq);
+
+  const newComments = newW.map((day) => {
+    const ex = user?.availability?.find(
+      (r) => r.date.toDate().toDateString() === day.date.toDateString()
+    );
+    return ex?.comment ?? '';
+  });
+
+  setComments(newComments);
+
 }, [user, currentWeekStart]);
 
   const refresh = useRefresh();
@@ -64,6 +77,7 @@ export default function AvailabilityScreen() {
 
     const newWeekAvailability = week.map((item, i) => ({
       date: Timestamp.fromDate(item.date),
+      comment: comments[i] || '',
       statuses: weekAvailabilityState[i] ?? [true, true, true],
     }));
 
@@ -96,19 +110,40 @@ export default function AvailabilityScreen() {
   };
 
 
+  // const handleNextWeek = () => {
+  //   const next = new Date(currentWeekStart);
+  //   next.setDate(next.getDate() + 7);
+  //   setCurrentWeekStart(next);
+  //   setWeek(getWeekDates(next, 0, 'he-IL'));
+  //   setPrevWeekBlocked(false);
+
+  //   const newReq = getWeekDates(next, 0, 'he-IL').map((day) => {
+  //     const ex = user?.availability?.find((r) =>
+  //       r.date.toDate().toDateString() === day.date.toDateString()
+  //     );
+  //     return ex?.statuses ?? [true, true, true];
+  //   });
+  //   setWeekAvailabilityState(newReq);
+  // };
+
   const handleNextWeek = () => {
     const next = new Date(currentWeekStart);
     next.setDate(next.getDate() + 7);
+
+    const newW = getWeekDates(next, 0, 'he-IL'); // ✅ ДОБАВИТЬ
+
     setCurrentWeekStart(next);
-    setWeek(getWeekDates(next, 0, 'he-IL'));
+    setWeek(newW);
+    // setComments(newW.map(() => '')); // ✅ теперь ок
     setPrevWeekBlocked(false);
 
-    const newReq = getWeekDates(next, 0, 'he-IL').map((day) => {
+    const newReq = newW.map((day) => {
       const ex = user?.availability?.find((r) =>
         r.date.toDate().toDateString() === day.date.toDateString()
       );
       return ex?.statuses ?? [true, true, true];
     });
+
     setWeekAvailabilityState(newReq);
   };
 
@@ -126,6 +161,7 @@ export default function AvailabilityScreen() {
     setCurrentWeekStart(prev);
     const newW = getWeekDates(prev, 0, 'he-IL');
     setWeek(newW);
+    // setComments(newW.map(() => ''));
 
     const newReq = newW.map((day) => {
       const ex = user?.availability?.find((r) =>
@@ -157,6 +193,14 @@ export default function AvailabilityScreen() {
               date={item.date}
               statuses={weekAvailabilityState[index]}
               onChange={(newStatuses) => updateDay(index, newStatuses)}
+              comment={comments[index]}
+              onCommentChange={(text) => {
+                setComments(prev => {
+                  const copy = [...prev];
+                  copy[index] = text;
+                  return copy;
+                });
+              }}
             />
           </View>
         )}
