@@ -9,6 +9,7 @@ export const GIVE_REQUESTS = collection(db, 'giveRequests');
 
 export const PROTOCOLS_HEADERS = collection(db, 'protocolsHeaders')
 
+export const POSTS = collection(db, 'posts');
 
 export const CURRENT_DATE = new Date;
 

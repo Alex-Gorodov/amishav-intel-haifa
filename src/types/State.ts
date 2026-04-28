@@ -1,4 +1,5 @@
 import { store } from "../store";
+import { Post } from "./Post";
 import { ProtocolPreview } from "./Protocol";
 import { GiveShiftRequest, SwapShiftRequest } from "./Request";
 import { User } from "./User";
@@ -15,6 +16,7 @@ export type DataState = {
   swapRequests: SwapShiftRequest[];
   giveRequests: GiveShiftRequest[];
   isRequestsDataLoading: boolean;
+  posts: Post[];
 }
 
 export type AppState = {

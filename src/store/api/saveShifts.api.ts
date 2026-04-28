@@ -43,6 +43,7 @@ export const saveUserShifts = async (userId: string, shifts: Shift[]) => {
     const validShifts = shifts.filter(shift => {
       return shift &&
              shift.id &&
+             shift.userId &&
              shift.date &&
              shift.post &&
              shift.startTime &&
