@@ -111,6 +111,7 @@ export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
 
     const newShift = {
       id: `${dateToSet.getTime()}_${post.id}`,
+      userId: userId,
       date: Timestamp.fromDate(dateToSet),
       post,
       startTime,

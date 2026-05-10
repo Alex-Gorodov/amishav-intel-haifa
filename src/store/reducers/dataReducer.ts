@@ -1,6 +1,10 @@
 import { createReducer } from "@reduxjs/toolkit";
 import { DataState } from "../../types/State";
+<<<<<<< HEAD
 import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, updateTrainingupdatingDate, loadProtocolsPreview } from "../actions";
+=======
+import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, updateTrainingExecutionDate, loadProtocolsPreview, loadPosts } from "../actions";
+>>>>>>> 6b887c16378dd1777f32c83f202de496ed701bfe
 import { SwapShiftRequest, GiveShiftRequest } from "../../types/Request";
 import { regenerateShiftId } from "../../utils/regenerateShiftId";
 import { Timestamp } from "firebase/firestore";
@@ -12,6 +16,7 @@ const initialState: DataState = {
   swapRequests: [],
   giveRequests: [],
   isRequestsDataLoading: false,
+  posts: [],
 };
 
 export const DataReducer = createReducer(initialState, (builder) => {
@@ -24,6 +29,9 @@ export const DataReducer = createReducer(initialState, (builder) => {
     })
     .addCase(loadProtocolsPreview, (state, action) => {
       state.protocolsPreview = action.payload.protocolsPreview;
+    })
+    .addCase(loadPosts, (state, action) => {
+      state.posts = action.payload.posts;
     })
     .addCase(updateAvailability, (state, action) => {
       const userToUpdate = state.users.find((u) => u.id === action.payload.user.id);

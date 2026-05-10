@@ -1,4 +1,5 @@
 import { GuardTask } from "./GuardTask";
+import { RoleValue } from "./User";
 
 export type Post = {
   id: string;
@@ -7,4 +8,6 @@ export type Post = {
   hourlyRate: number;
   defaultStartTime: string;
   defaultEndTime: string;
+  role: RoleValue;
+  isMultiple?: boolean;
 }

@@ -15,6 +15,8 @@ import { GlobalStyles } from '../../constants/GlobalStyles';
 import { Roles } from '../../constants/Roles';
 import { getRoleLabel } from '../../utils/getRoleLabel';
 import CloseButton from '../CloseButton/CloseButton';
+import { User } from '../../types/User';
+import { getAvailableUsersByPost } from '../../utils/getAvailablePostsByRole';
 
 interface ShiftActionsModalProps {
   visible: boolean;
@@ -90,45 +92,116 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
     })
   }
 
-  const relevantShiftsToSwap = useMemo(() => {
-    if (!users || !currentShift) return [];
+  // const relevantShiftsToSwap = useMemo(() => {
+  //   if (!users || !currentShift) return [];
 
-    const myRole = getRoleByPost(currentShift.post.id);
-    if (!myRole) return [];
+  //   const myRole = getRoleByPost(currentShift.post.id);
+  //   if (!myRole) return [];
 
-    return users
-      .filter(u => u.id !== user?.id)
-      .flatMap(u =>
-        (u.shifts || [])
-          .filter(s => getRoleByPost(s.post.id) === myRole)
-          .map(s => ({
-            shift: s,
-            owner: u,
-          }))
-      )
-      .sort((a, b) => {
-        const aDate = a.shift.date.toDate().getTime();
-        const bDate = b.shift.date.toDate().getTime();
-        return aDate - bDate;
-      });
-  }, [users, currentShift]);
+  //   return users
+  //     .filter(u => u.id !== user?.id)
+  //     .flatMap(u =>
+  //       (u.shifts || [])
+  //         .filter(s => getRoleByPost(s.post.id) === myRole)
+  //         .map(s => ({
+  //           shift: s,
+  //           owner: u,
+  //         }))
+  //     )
+  //     .sort((a, b) => {
+  //       const aDate = a.shift.date.toDate().getTime();
+  //       const bDate = b.shift.date.toDate().getTime();
+  //       return aDate - bDate;
+  //     });
+  // }, [users, currentShift]);
 
-  const groupedShifts = useMemo(() => {
-  if (!relevantShiftsToSwap) return {};
 
   const now = new Date();
 
-  return relevantShiftsToSwap
-    .filter(item => item.shift.date.toDate().getTime() > now.getTime()) // только будущие смены
-    .reduce((acc, item) => {
-      const dateStr = item.shift.date.toDate().toLocaleDateString('he-IL');
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  startOfWeek.setHours(0, 0, 0, 0);
 
-      if (!acc[dateStr]) acc[dateStr] = [];
-      acc[dateStr].push(item);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 7);
 
-      return acc;
-    }, {} as Record<string, typeof relevantShiftsToSwap>);
-}, [relevantShiftsToSwap]);
+  const canSwap = (userA: User, userB: User, shiftA: Shift, shiftB: Shift) => {
+    // same user ❌
+    if (userA.id === userB.id) return false;
+
+    // A must be able to work B's shift
+    const aCanTakeB =
+      getAvailableUsersByPost([userA], shiftB.post.id).length > 0;
+
+    // B must be able to work A's shift
+    const bCanTakeA =
+      getAvailableUsersByPost([userB], shiftA.post.id).length > 0;
+
+    return aCanTakeB && bCanTakeA;
+  };
+
+  const availableShifts = useMemo(() => {
+    const start = startOfWeek;
+    const end = endOfWeek;
+
+    return users.flatMap(user => {
+      return (user.shifts || [])
+        .filter(targetShift => {
+          if (!targetShift?.date) return false;
+
+          const targetDate =
+            "toDate" in targetShift.date
+              ? targetShift.date.toDate()
+              : new Date(targetShift.date);
+
+          const inWeek = targetDate >= start && targetDate < end;
+
+          if (!inWeek) return false;
+
+          if (user.id === currentShift.userId && targetShift.id === currentShift.id) return false;
+
+          const ok = canSwap(
+            users.find(u => u.id === currentShift.userId)!,
+            user,
+            currentShift,
+            targetShift
+          );
+
+          return ok;
+        })
+        .map(targetShift => ({
+          ...targetShift,
+          user,
+        }));
+    })
+    .sort((a, b) => {
+      const dateA =
+        "toDate" in a.date ? a.date.toDate() : new Date(a.date);
+
+      const dateB =
+        "toDate" in b.date ? b.date.toDate() : new Date(b.date);
+
+      return dateA.getTime() - dateB.getTime();
+    });
+  }, [users, currentShift, startOfWeek, endOfWeek]);
+
+  const groupedShifts = useMemo(() => {
+  if (!availableShifts) return {};
+
+  return availableShifts.reduce((acc, item) => {
+    const date =
+      "toDate" in item.date
+        ? item.date.toDate()
+        : new Date(item.date);
+
+    const dateStr = date.toLocaleDateString("he-IL");
+
+    if (!acc[dateStr]) acc[dateStr] = [];
+    acc[dateStr].push(item);
+
+    return acc;
+  }, {} as Record<string, typeof availableShifts>);
+}, [availableShifts]);
 
 
   const relevantUsersToGive = useMemo(() => {
@@ -273,7 +346,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
                         style={[styles.modalShiftsList, {height: SCREEN_HEIGHT - 430}]}
                       >
                         {relevantUsersToGive.map(u => {
-                          const isSelected = secondUserId === u.id;
+                          const isSelected = selectedShiftId === u.id;
 
                           return (
                             <Pressable
@@ -340,15 +413,15 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
                           </Text>
 
                           {shifts.map((item) => {
-                            const isSelected = selectedShiftId === item.shift.id;
+                            const isSelected = selectedShiftId === item.id;
 
                             return (
                               <Pressable
-                                key={item.shift.id}
+                                key={item.id}
                                 onPress={() => {
-                                  setSecondUserId(item.owner.id);
-                                  setChosenShift(item.shift);
-                                  selectedShiftId !== item.shift.id ? setSelectedShiftId(item.shift.id) : setSelectedShiftId(null)
+                                  setSecondUserId(item.user.id);
+                                  setChosenShift(item);
+                                  selectedShiftId !== item.id ? setSelectedShiftId(item.id) : setSelectedShiftId(null)
                                 }}
                                 style={{
                                   padding: 8,
@@ -359,11 +432,11 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
                                 }}
                               >
                                 <Text style={{ textAlign: 'right' }}>
-                                  {item.owner.firstName} {item.owner.secondName}
+                                  {item.user.firstName} {item.user.secondName}
                                 </Text>
-                                <Text style={{ textAlign: 'right' }}>{item.shift.post.title}</Text>
+                                <Text style={{ textAlign: 'right' }}>{item.post.title}</Text>
                                 <Text style={{ textAlign: 'right' }}>
-                                  {item.shift.startTime} - {item.shift.endTime}
+                                  {item.startTime} - {item.endTime}
                                 </Text>
                               </Pressable>
                             );
