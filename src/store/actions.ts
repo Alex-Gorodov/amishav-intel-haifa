@@ -41,4 +41,4 @@ export const setSuccess = createAction<{message: string | null}>('app/setSuccess
 
 export const updateUserShifts = createAction<{userId: string, shifts: Shift[]}>('data/updateUserShifts');
 
-export const updateTrainingupdatingDate = createAction<{userId: string, training: Training, date: Date}>('data/updateTrainingupdatingDate')
+export const setTrainingUpdatingDate = createAction<{userId: string, training: Training, date: Date}>('data/updateTrainingupdatingDate')

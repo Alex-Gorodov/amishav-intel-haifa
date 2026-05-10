@@ -1,13 +1,10 @@
 import { createReducer } from "@reduxjs/toolkit";
 import { DataState } from "../../types/State";
-<<<<<<< HEAD
-import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, updateTrainingupdatingDate, loadProtocolsPreview } from "../actions";
-=======
-import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, updateTrainingExecutionDate, loadProtocolsPreview, loadPosts } from "../actions";
->>>>>>> 6b887c16378dd1777f32c83f202de496ed701bfe
+import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, setTrainingUpdatingDate, loadProtocolsPreview, loadPosts } from "../actions";
 import { SwapShiftRequest, GiveShiftRequest } from "../../types/Request";
 import { regenerateShiftId } from "../../utils/regenerateShiftId";
 import { Timestamp } from "firebase/firestore";
+import { normalizeDate } from "../../utils/dateUtils";
 
 const initialState: DataState = {
   users: [],
@@ -51,7 +48,7 @@ export const DataReducer = createReducer(initialState, (builder) => {
       userToUpdate.documents.push(action.payload.document);
     })
 
-    .addCase(updateTrainingupdatingDate, (state, action) => {
+    .addCase(setTrainingUpdatingDate, (state, action) => {
       const { userId, training, date } = action.payload;
 
       const userToUpdate = state.users.find(u => u.id === userId);
@@ -62,7 +59,7 @@ export const DataReducer = createReducer(initialState, (builder) => {
       // проходим по всем ключам trainings
       (Object.keys(trainings) as (keyof typeof trainings)[]).forEach(key => {
         if (trainings[key].id === training.id) {
-          trainings[key].updatingDate = Timestamp.fromDate(date);
+          trainings[key].updatingDate = normalizeDate(Timestamp.fromDate(date));
         }
       });
     })

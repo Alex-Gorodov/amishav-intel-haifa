@@ -5,10 +5,11 @@ import { Colors, SCREEN_WIDTH } from '../../constants';
 import CustomButton from '../CustomButton/CustomButton';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useDispatch } from 'react-redux';
-import { updateTrainingupdatingDate } from '../../store/actions';
 import useUser from '../../hooks/useUser';
 import { updateTrainingDate } from '../../store/api/updateTrainingDate.api';
 import { User } from '../../types/User';
+import { normalizeDate } from '../../utils/dateUtils';
+import { setTrainingUpdatingDate } from '../../store/actions';
 
 interface TrainingProgressBarProps {
   training: Training;
@@ -18,12 +19,26 @@ interface TrainingProgressBarProps {
 export default function TrainingProgressBar({ training, trainingKey }: TrainingProgressBarProps) {
   const user = useUser();
   const currentDate = Date.now();
-  const updatingDate = training.updatingDate && training.updatingDate.toDate().getTime();
-  const dateOfDeadline = updatingDate ? updatingDate + training.validityPeriod * 24 * 60 * 60 * 1000 : 0;
+  const updatingDate = training.updatingDate
+  ? normalizeDate(training.updatingDate)
+  : null;
 
-  const total = updatingDate && dateOfDeadline - updatingDate;
-  const passed = updatingDate && currentDate - updatingDate;
-  const progress = passed && total && Math.min(Math.max(passed / total, 0), 1);
+  const updatingTime = updatingDate?.getTime() ?? 0;
+
+  const dateOfDeadline =
+    updatingTime +
+    training.validityPeriod * 24 * 60 * 60 * 1000;
+
+  const currentTime = Date.now();
+
+  const total = dateOfDeadline - updatingTime;
+
+  const passed = currentTime - updatingTime;
+
+  const progress =
+    total > 0
+      ? Math.min(Math.max(passed / total, 0), 1)
+      : 0;
 
   const dispatch = useDispatch();
 
@@ -86,7 +101,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
             title={isDatePickerOpened ? 'שמור' : 'לחדש'}
             onHandle={() => {
               if (isDatePickerOpened && user && date) {
-                dispatch(updateTrainingupdatingDate({
+                dispatch(setTrainingUpdatingDate({
                   userId: user.id,
                   training,
                   date,
