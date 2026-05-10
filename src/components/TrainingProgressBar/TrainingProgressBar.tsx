@@ -5,7 +5,7 @@ import { Colors, SCREEN_WIDTH } from '../../constants';
 import CustomButton from '../CustomButton/CustomButton';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useDispatch } from 'react-redux';
-import { updateTrainingExecutionDate } from '../../store/actions';
+import { updateTrainingupdatingDate } from '../../store/actions';
 import useUser from '../../hooks/useUser';
 import { updateTrainingDate } from '../../store/api/updateTrainingDate.api';
 import { User } from '../../types/User';
@@ -18,11 +18,11 @@ interface TrainingProgressBarProps {
 export default function TrainingProgressBar({ training, trainingKey }: TrainingProgressBarProps) {
   const user = useUser();
   const currentDate = Date.now();
-  const executionDate = training.executionDate && training.executionDate.toDate().getTime();
-  const dateOfDeadline = executionDate ? executionDate + training.validityPeriod * 24 * 60 * 60 * 1000 : 0;
+  const updatingDate = training.updatingDate && training.updatingDate.toDate().getTime();
+  const dateOfDeadline = updatingDate ? updatingDate + training.validityPeriod * 24 * 60 * 60 * 1000 : 0;
 
-  const total = executionDate && dateOfDeadline - executionDate;
-  const passed = executionDate && currentDate - executionDate;
+  const total = updatingDate && dateOfDeadline - updatingDate;
+  const passed = updatingDate && currentDate - updatingDate;
   const progress = passed && total && Math.min(Math.max(passed / total, 0), 1);
 
   const dispatch = useDispatch();
@@ -76,7 +76,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
           }}
         >
           <Text style={styles.label}>תאריך ביצוע אחרון:</Text>
-          <Text style={styles.value}>{executionDate === null ? 'אין מידע' : new Date(executionDate).toLocaleDateString()}</Text>
+          <Text style={styles.value}>{updatingDate === null ? 'אין מידע' : new Date(updatingDate).toLocaleDateString()}</Text>
 
           <Text style={styles.label}>בתוקף עד:</Text>
           <Text style={styles.value}>{dateOfDeadline === 0 ? 'אין מידע' : new Date(dateOfDeadline).toLocaleDateString()}</Text>
@@ -86,7 +86,7 @@ export default function TrainingProgressBar({ training, trainingKey }: TrainingP
             title={isDatePickerOpened ? 'שמור' : 'לחדש'}
             onHandle={() => {
               if (isDatePickerOpened && user && date) {
-                dispatch(updateTrainingExecutionDate({
+                dispatch(updateTrainingupdatingDate({
                   userId: user.id,
                   training,
                   date,

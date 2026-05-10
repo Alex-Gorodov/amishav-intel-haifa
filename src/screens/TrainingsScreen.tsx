@@ -23,11 +23,11 @@ export default function TrainingsScreen() {
       return trainingsArray.sort((a, b) => {
       const now = Date.now();
 
-      const aStart = a.training.executionDate?.toDate?.()?.getTime() ?? 0;
+      const aStart = a.training.updatingDate?.toDate?.()?.getTime() ?? 0;
       const aEnd = aStart + a.training.validityPeriod * 24 * 60 * 60 * 1000;
       const aProgress = aEnd > aStart ? Math.min(Math.max((now - aStart) / (aEnd - aStart), 0), 1) : 0;
 
-      const bStart = b.training.executionDate?.toDate?.()?.getTime() ?? 0;
+      const bStart = b.training.updatingDate?.toDate?.()?.getTime() ?? 0;
       const bEnd = bStart + b.training.validityPeriod * 24 * 60 * 60 * 1000;
       const bProgress = bEnd > bStart ? Math.min(Math.max((now - bStart) / (bEnd - bStart), 0), 1) : 0;
 

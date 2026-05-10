@@ -53,7 +53,7 @@ export default function Navigation() {
       ? allRequests.filter(req => req.secondUserId === user.id)
       : [];
 
-  const hasTrainingsExpired = user?.trainings.roni.executionDate
+  const hasTrainingsExpired = user?.trainings.roni.updatingDate
 
 
   return (

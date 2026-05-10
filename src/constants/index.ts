@@ -9,7 +9,6 @@ export const GIVE_REQUESTS = collection(db, 'giveRequests');
 
 export const PROTOCOLS_HEADERS = collection(db, 'protocolsHeaders')
 
-
 export const CURRENT_DATE = new Date;
 
 export const SCREEN_WIDTH = Dimensions.get('window').width;

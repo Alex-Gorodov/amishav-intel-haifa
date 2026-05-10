@@ -13,7 +13,7 @@ export const updateTrainingDate = async (
     const userRef = doc(db, 'users', userId);
 
     await updateDoc(userRef, {
-      [`trainings.${trainingKey}.executionDate`]: Timestamp.fromDate(date),
+      [`trainings.${trainingKey}.updatingDate`]: Timestamp.fromDate(date),
     });
 
     return { success: true };

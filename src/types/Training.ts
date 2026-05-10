@@ -4,6 +4,6 @@ export type Training = {
   id: string;
   title: string;
   description?: string;
-  executionDate: Timestamp | null;
+  updatingDate: Timestamp | null;
   validityPeriod: number;
 }
