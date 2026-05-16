@@ -8,7 +8,6 @@ import CustomButton from "../CustomButton/CustomButton";
 import CancelButton from "../CancelButton/CancelButton";
 import { db } from "../../services/firebaseConfig";
 import TimePicker from "../TimePicker/TimePicker";
-// import { Posts } from "../../constants/Posts";
 import { useDispatch, useSelector } from "react-redux";
 import { Colors } from "../../constants";
 import React, { useState } from "react";

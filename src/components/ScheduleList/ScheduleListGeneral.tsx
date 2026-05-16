@@ -11,6 +11,7 @@ import { useShiftRequestModal } from '../../hooks/useShiftRequestModal';
 import { getIsoLocalDateKey } from '../../utils/getIsoLocalDateKey';
 import ShiftActionsModal from '../ShiftActionsModal/ShiftActionsModal';
 import { RootState } from '../../store/root-reducer';
+import { Posts } from '../../constants/Posts';
 
 export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }) {
 
@@ -28,17 +29,55 @@ export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }
 
   const dateKeys = useMemo(() => weekDates.map(getIsoLocalDateKey), [weekDates]);
 
+  const postOrder = new Map(
+    Posts.map((p, index) => [p.id, index])
+  );
+
   const posts = useSelector((state: RootState) => state.data.posts);
 
+  // const rows = useMemo(() => {
+  //   return posts.map((post) => {
+  //     const shiftsMap: Record<string, string | null> = {};
+  //     dateKeys.forEach((key, idx) => {
+  //       const day = weekDates[idx];
+
+  //       const names = users
+  //         .filter((u) => u.shifts?.some((s) => isSameDay(s.date.toDate(), day) && s.post?.id === post.id))
+  //         .map((u) => `${u.firstName} ${u.secondName}`);
+  //       shiftsMap[key] = names.length ? names.join(', ') : null;
+  //     });
+
+  //     return {
+  //       id: post.id,
+  //       name: post.title,
+  //       shifts: shiftsMap,
+  //     };
+  //   });
+  // }, [users, dateKeys]);
+
   const rows = useMemo(() => {
-    return posts.map((post) => {
+  return [...posts]
+    .sort((a, b) => {
+      const aIndex = postOrder.get(a.id) ?? 9999;
+      const bIndex = postOrder.get(b.id) ?? 9999;
+      return aIndex - bIndex;
+    })
+    .map((post) => {
       const shiftsMap: Record<string, string | null> = {};
+
       dateKeys.forEach((key, idx) => {
         const day = weekDates[idx];
 
         const names = users
-          .filter((u) => u.shifts?.some((s) => isSameDay(s.date.toDate(), day) && s.post?.id === post.id))
+          .filter((u) =>
+            u.shifts?.some(
+              (s) =>
+                isSameDay(s.date.toDate(), day) &&
+                s.post?.id === post.id
+            )
+          )
           .map((u) => `${u.firstName} ${u.secondName}`);
+
         shiftsMap[key] = names.length ? names.join(', ') : null;
       });
 
@@ -48,7 +87,7 @@ export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }
         shifts: shiftsMap,
       };
     });
-  }, [users, dateKeys]);
+}, [users, dateKeys, posts]);
 
   const {
     currentShift,

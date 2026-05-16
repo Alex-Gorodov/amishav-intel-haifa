@@ -7,6 +7,7 @@ import { RootState } from '../../store/root-reducer';
 export default function SearchField() {
   const [query, setQuery] = useState('');
   const posts = useSelector((state: RootState) => state.data.posts)
+
   const data = useMemo(() => {
     const q = query.trim().toLowerCase();
     let filtered = posts.filter((r) => {
