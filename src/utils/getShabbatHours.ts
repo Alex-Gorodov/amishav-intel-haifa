@@ -25,6 +25,8 @@ export const getShabbatHours = (shift: Shift, shabbatByWeek: Record<string, Shab
   const candles = new Date(shabbat.candles);
   const havdalah = new Date(shabbat.havdalah);
 
+  havdalah.setHours(28, 0, 0, 0);
+
   const overlapStart = shiftStart > candles ? shiftStart : candles;
   const overlapEnd = shiftEnd < havdalah ? shiftEnd : havdalah;
 

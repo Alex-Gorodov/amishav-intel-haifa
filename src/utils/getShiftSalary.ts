@@ -35,6 +35,9 @@ export function getShiftSalary(
     const shabbatStart = new Date(shabbatTimes.candles);
     const shabbatEnd = new Date(shabbatTimes.havdalah);
 
+    // Extend to Sunday 04:00
+    shabbatEnd.setHours(28, 0, 0, 0);
+
     if (shiftEnd <= shabbatStart || shiftStart >= shabbatEnd) {
       regularHours = (shiftEnd.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
     } else {

@@ -189,19 +189,6 @@ import { Ionicons } from '@expo/vector-icons';
       <View style={styles.container}>
         {renderHeader()}
 
-        {/* <Modal transparent visible={isRemarkShowed} animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalCard}>
-              <Text style={styles.modalText}>{remarkToShow}</Text>
-              <TouchableOpacity style={styles.modalClose} onPress={() => setRemarkShowed(false)}>
-                <Text style={{ color: '#eee', fontWeight: '600' }}>סגור</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal> */}
-
-
-
         {/* main area: constrain height so table ends above navigation (bottom spacing ~100px) */}
         <View style={{ flexDirection: 'row', height: gridHeight }}>
           <ScrollView

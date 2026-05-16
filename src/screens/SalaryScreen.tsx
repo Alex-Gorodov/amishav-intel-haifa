@@ -1,8 +1,6 @@
-import { Animated, RefreshControl, StyleSheet, Text, View, TouchableOpacity, Pressable, ScrollView } from 'react-native';
-import { getMonthlySalary, getShiftSalary } from '../utils/getShiftSalary';
-import { getWeekKeyForShift } from '../utils/getWeekKeyForShift';
+import { Animated, RefreshControl, StyleSheet, Text, View, TouchableOpacity, Pressable } from 'react-native';
+import { getMonthlySalary } from '../utils/getShiftSalary';
 import { useShabbatByWeek } from '../hooks/useShabbatByWeek';
-import { getShiftDuration } from '../utils/getShiftDuration';
 import useUser from '../hooks/useUser';
 import useRefresh from '../hooks/useRefresh';
 import { Colors, CURRENT_DATE } from '../constants';
