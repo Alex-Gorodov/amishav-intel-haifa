@@ -92,30 +92,6 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
     })
   }
 
-  // const relevantShiftsToSwap = useMemo(() => {
-  //   if (!users || !currentShift) return [];
-
-  //   const myRole = getRoleByPost(currentShift.post.id);
-  //   if (!myRole) return [];
-
-  //   return users
-  //     .filter(u => u.id !== user?.id)
-  //     .flatMap(u =>
-  //       (u.shifts || [])
-  //         .filter(s => getRoleByPost(s.post.id) === myRole)
-  //         .map(s => ({
-  //           shift: s,
-  //           owner: u,
-  //         }))
-  //     )
-  //     .sort((a, b) => {
-  //       const aDate = a.shift.date.toDate().getTime();
-  //       const bDate = b.shift.date.toDate().getTime();
-  //       return aDate - bDate;
-  //     });
-  // }, [users, currentShift]);
-
-
   const now = new Date();
 
   const startOfWeek = new Date(now);
@@ -231,13 +207,13 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
 
     if (isSwapView) {
       return Object.keys(groupedShifts).length
-        ? SCREEN_HEIGHT * 0.675
+        ? SCREEN_HEIGHT * 0.7
         : SCREEN_HEIGHT * 0.25;
     }
 
     if (isGiveView) {
       return relevantUsersToGive.length !== 0
-        ? SCREEN_HEIGHT * 0.63
+        ? SCREEN_HEIGHT * 0.7
         : SCREEN_HEIGHT * 0.25;
     }
 
@@ -346,7 +322,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
                         style={[styles.modalShiftsList, {height: SCREEN_HEIGHT - 430}]}
                       >
                         {relevantUsersToGive.map(u => {
-                          const isSelected = selectedShiftId === u.id;
+                          const isSelected = secondUserId === u.id;
 
                           return (
                             <Pressable
