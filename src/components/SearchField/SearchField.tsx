@@ -1,13 +1,15 @@
 import { StyleSheet, TextInput } from 'react-native'
 import React, { useState, useMemo } from 'react'
-import { Posts } from '../../constants/Posts';
 import { Colors } from '../../constants';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/root-reducer';
 
 export default function SearchField() {
   const [query, setQuery] = useState('');
+  const posts = useSelector((state: RootState) => state.data.posts)
   const data = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let filtered = Posts.filter((r) => {
+    let filtered = posts.filter((r) => {
       if (!q) return true;
       const start = (r.defaultStartTime ?? '').toLowerCase();
       const end = (r.defaultEndTime ?? '').toLowerCase();
@@ -21,7 +23,7 @@ export default function SearchField() {
 
 
     return filtered;
-  }, [Posts, query]);
+  }, [posts, query]);
 
     return (
       <TextInput

@@ -1,6 +1,5 @@
 import { StyleSheet, View } from 'react-native';
 import React, { useMemo, useState } from 'react';
-import { Posts } from '../../constants/Posts';
 import ScheduleGrid from '../ScheduleGrid/ScheduleGrid';
 import { useSelector } from 'react-redux';
 import { State } from '../../types/State';
@@ -11,6 +10,7 @@ import useUser from '../../hooks/useUser';
 import { useShiftRequestModal } from '../../hooks/useShiftRequestModal';
 import { getIsoLocalDateKey } from '../../utils/getIsoLocalDateKey';
 import ShiftActionsModal from '../ShiftActionsModal/ShiftActionsModal';
+import { RootState } from '../../store/root-reducer';
 
 export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }) {
 
@@ -28,8 +28,10 @@ export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }
 
   const dateKeys = useMemo(() => weekDates.map(getIsoLocalDateKey), [weekDates]);
 
+  const posts = useSelector((state: RootState) => state.data.posts);
+
   const rows = useMemo(() => {
-    return Posts.map((post) => {
+    return posts.map((post) => {
       const shiftsMap: Record<string, string | null> = {};
       dateKeys.forEach((key, idx) => {
         const day = weekDates[idx];
@@ -161,7 +163,7 @@ export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }
 
           const text = parts.length ? parts.join('\n\n') : '';
 
-          const postFromConst = Posts.find((p) => p.id === postId);
+          const postFromConst = posts.find((p) => p.id === postId);
           const title = postFromConst ? postFromConst.title : postId;
 
           setRemarkTitle(title);

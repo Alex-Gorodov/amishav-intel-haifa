@@ -8,10 +8,11 @@ import CustomButton from "../CustomButton/CustomButton";
 import CancelButton from "../CancelButton/CancelButton";
 import { db } from "../../services/firebaseConfig";
 import TimePicker from "../TimePicker/TimePicker";
-import { Posts } from "../../constants/Posts";
-import { useDispatch } from "react-redux";
+// import { Posts } from "../../constants/Posts";
+import { useDispatch, useSelector } from "react-redux";
 import { Colors } from "../../constants";
 import React, { useState } from "react";
+import { RootState } from "../../store/root-reducer";
 
 interface Props {
   isOpened: boolean;
@@ -39,9 +40,11 @@ export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
     setRemark("");
   };
 
+  const posts = useSelector((state: RootState) => state.data.posts);
+
   const handlePostSelect = (postId: string) => {
     setSelectedPost(postId);
-    const post = Posts.find(p => p.id === postId);
+    const post = posts.find(p => p.id === postId);
     setStartTime(post?.defaultStartTime || "");
     setEndTime(post?.defaultEndTime || "");
   };
@@ -101,7 +104,7 @@ export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
 
     setLoading(true);
 
-    const post = Posts.find(p => p.id === selectedPost);
+    const post = posts.find(p => p.id === selectedPost);
     if (!post) {
       setLoading(false);
       return;
@@ -157,7 +160,7 @@ export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
           />
 
           <ScrollView style={styles.postsList}>
-            {Posts.map(p => (
+            {posts.map(p => (
               <Pressable
                 key={p.id}
                 style={[

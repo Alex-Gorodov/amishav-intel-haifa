@@ -3,11 +3,13 @@ import { User } from "../types/User";
 import { Shift } from "../types/Shift";
 import { Post } from "../types/Post";
 import { Availability } from "../types/Availability";
-import { Posts } from "../constants/Posts";
+// import { Posts } from "../constants/Posts";
 import { getRoleByPost } from "./getRoleByPost";
 import { toISODate } from "./dateUtils";
 import { getWeekKeyForShift } from "./getWeekKeyForShift";
 import { regenerateShiftId } from "./regenerateShiftId";
+import { RootState } from "../store/root-reducer";
+import { useSelector } from "react-redux";
 
 export type ScheduleGenerationResult = {
   success: boolean;
@@ -346,14 +348,16 @@ export function generateSchedule(
   // Получаем все посты, которые нужно заполнить
   const postsToFill: Array<{ post: Post; date: Date }> = [];
 
+  const posts = useSelector((state: RootState) => state.data.posts)
+
   for (const date of targetWeekDates) {
-    for (const post of Posts) {
+    for (const post of posts) {
       // Пропускаем посты для выходных, если это не выходной день
       const isWeekend = date.getDay() === 5 || date.getDay() === 6; // Friday or Saturday
       if (post.id.includes('-weekend') && !isWeekend) continue;
       if (!post.id.includes('-weekend') && isWeekend) {
         // Для выходных ищем версию с -weekend, если она есть
-        const weekendPost = Posts.find(p => p.id === `${post.id}-weekend`);
+        const weekendPost = posts.find(p => p.id === `${post.id}-weekend`);
         if (weekendPost) continue; // Используем версию для выходных
       }
 
@@ -764,6 +768,7 @@ export function generateSchedule(
       const allUserShifts = [...existingShiftsSnapshot, ...userNewShifts];
       const tempShift: Shift = {
         id: 'temp',
+        userId: user.id,
         date: Timestamp.fromDate(date),
         post,
         startTime: post.defaultStartTime,
@@ -870,6 +875,7 @@ export function generateSchedule(
       // Назначаем смену
       const newShift: Shift = {
         id: regenerateShiftId(`shift-${user.id}-${post.id}-${date.getTime()}`),
+        userId: user.id,
         date: Timestamp.fromDate(date),
         post,
         startTime: post.defaultStartTime,
@@ -969,6 +975,7 @@ export function generateSchedule(
         // Назначаем смену (релаксированный режим), фиксируем предупреждение
         const newShift: Shift = {
           id: regenerateShiftId(`fallback-${user.id}-${post.id}-${date.getTime()}`),
+          userId: user.id,
           date: Timestamp.fromDate(date),
           post,
           startTime: post.defaultStartTime,

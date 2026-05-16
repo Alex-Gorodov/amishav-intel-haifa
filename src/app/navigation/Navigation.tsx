@@ -21,6 +21,7 @@ import ScheduleStackNavigator from '../ScheduleNavigator/ScheduleNavigator';
 import CustomTabBar from '../../components/CustomTabBar/CustomTabBar';
 import { Dispatch, UnknownAction } from '@reduxjs/toolkit';
 import { fetchProtocolsPreview } from '../../store/api/fetchProtocolsPreview.api';
+import { fetchPosts } from '../../store/api/fetchPosts.api';
 
 
 export default function Navigation() {
@@ -32,6 +33,7 @@ export default function Navigation() {
 
   useEffect(() => {
     fetchUsers(dispatch);
+    fetchPosts(dispatch);
     fetchProtocolsPreview(dispatch);
     fetchSwapRequests(dispatch);
     fetchGiveRequests(dispatch);

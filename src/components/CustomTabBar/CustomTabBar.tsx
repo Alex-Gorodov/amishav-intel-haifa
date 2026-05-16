@@ -40,39 +40,39 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         }}
       />
 
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const isFocused = state.index === index;
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const isFocused = state.index === index;
 
-        const icon = options.tabBarIcon
-          ? options.tabBarIcon({
-              focused: isFocused,
-              color: isFocused ? Colors.mainDark : Colors.unfocusedTabBarButton,
-              size: 24,
-            })
-          : null;
+          const icon = options.tabBarIcon
+            ? options.tabBarIcon({
+                focused: isFocused,
+                color: isFocused ? Colors.mainDark : Colors.unfocusedTabBarButton,
+                size: 24,
+              })
+            : null;
 
-        return (
-          <TouchableOpacity
-            key={route.key}
-            onPress={() => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            }}
-            style={styles.tabWrapper}
-            hitSlop={{ top: 12, bottom: 12, left: 0, right: 12 }}
-          >
-            {icon}
-          </TouchableOpacity>
-        );
-      })}
-    </BlurView>
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={() => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!isFocused && !event.defaultPrevented) {
+                  navigation.navigate(route.name);
+                }
+              }}
+              style={styles.tabWrapper}
+              hitSlop={{ top: 12, bottom: 12, left: 0, right: 12 }}
+            >
+              {icon}
+            </TouchableOpacity>
+          );
+        })}
+      </BlurView>
     </View>
   );
 }
