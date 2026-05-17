@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Shift } from "../types/Shift";
 import { Holiday } from "../types/ShabbatTimes";
 import { fetchHolidaysByMonth } from "../store/api/fetchShabbatTimes";
+import { normalizeDate } from "../utils/getCurrentWeekDates";
 
 export function useHolidaysByWeek(shifts?: Shift[]) {
   const [holidaysByWeek, setHolidaysByWeek] = useState<{ [weekKey: string]: Holiday[] }>({});
@@ -13,7 +14,7 @@ export function useHolidaysByWeek(shifts?: Shift[]) {
       const result: { [weekKey: string]: Holiday[] } = {};
 
       for (const shift of shifts) {
-        const shiftDate = shift.date.toDate();
+        const shiftDate = normalizeDate(shift.date);
 
         const day = shiftDate.getDay();
         const daysUntilFriday = (5 - day + 7) % 7;

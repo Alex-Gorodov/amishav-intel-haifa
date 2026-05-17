@@ -1,5 +1,6 @@
 import { Shift } from "../types/Shift";
 import { ShabbatTimes } from "../types/ShabbatTimes";
+import { normalizeDate } from "./getCurrentWeekDates"; // Make sure this is your correct date utility import
 
 function getWeekKeyForShift(shiftStart: Date): string {
   const day = shiftStart.getDay();
@@ -19,7 +20,9 @@ export function getShiftSalary(
   const [startHour, startMinute] = startTime.split(":").map(Number);
   const [endHour, endMinute] = endTime.split(":").map(Number);
 
-  const shiftDate = new Date(date.seconds * 1000);
+  // ✅ FIX: Use normalizeDate to parse the field instead of extracting .seconds directly
+  const shiftDate = normalizeDate(date);
+
   let shiftStart = new Date(shiftDate);
   shiftStart.setHours(startHour, startMinute, 0, 0);
 
@@ -63,7 +66,8 @@ export function getMonthlySalary(
   shabbatByWeek: { [weekKey: string]: ShabbatTimes }
 ) {
   const total = shifts.reduce((total, shift) => {
-    const weekKey = getWeekKeyForShift(shift.date.toDate());
+    // ✅ FIX: normalizeDate used here keeps calculations solid across UI renders
+    const weekKey = getWeekKeyForShift(normalizeDate(shift.date));
     const shabbat = shabbatByWeek[weekKey];
     const salary = getShiftSalary(shift, shabbat);
     return total + salary.totalPay;

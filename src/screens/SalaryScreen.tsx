@@ -12,6 +12,7 @@ import { GlobalStyles } from '../constants/GlobalStyles';
 import { getHoursString } from '../utils/getHoursString';
 import { getMonthlyHours } from '../utils/getMonthlyHours';
 import { getShabbatHoursString } from '../utils/getShabbatHours';
+import { normalizeDate } from '../utils/getCurrentWeekDates';
 
 export default function SalaryScreen() {
   const user = useUser();
@@ -37,7 +38,7 @@ export default function SalaryScreen() {
 
   const shifts = useMemo(() => {
     return user?.shifts.filter((s) => {
-      const d = s.date.toDate();
+      const d = normalizeDate(s.date);
       return d.getMonth() === displayDate.getMonth() && d.getFullYear() === displayDate.getFullYear();
     }) ?? [];
   }, [user?.shifts, displayDate]);
@@ -48,19 +49,19 @@ export default function SalaryScreen() {
   today.setHours(0, 0, 0, 0);
 
   const currentShifts = shifts.filter(s => {
-    const shiftDate = new Date(s.date.toDate());
+    const shiftDate = new Date(normalizeDate(s.date));
     shiftDate.setHours(0, 0, 0, 0);
     return shiftDate.getTime() <= today.getTime();
   });
 
   const futureShifts = shifts.filter(s => {
-    const shiftDate = new Date(s.date.toDate());
+    const shiftDate = new Date(normalizeDate(s.date));
     shiftDate.setHours(0, 0, 0, 0);
     return shiftDate.getTime() > today.getTime();
   });
 
-  const sortedCurrentShifts = [...currentShifts].sort((a, b) => b.date.toDate().getTime() - a.date.toDate().getTime());
-  const sortedFutureShifts = [...futureShifts].sort((a, b) => b.date.toDate().getTime() - a.date.toDate().getTime());
+  const sortedCurrentShifts = [...currentShifts].sort((a, b) => normalizeDate(b.date).getTime() - normalizeDate(a.date).getTime());
+  const sortedFutureShifts = [...futureShifts].sort((a, b) => normalizeDate(b.date).getTime() - normalizeDate(a.date).getTime());
 
   const toggleFutureShifts = () => {
     const willExpand = !isFutureExpanded;

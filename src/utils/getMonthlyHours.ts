@@ -1,4 +1,5 @@
 import { Shift } from "../types/Shift";
+import { normalizeDate } from "./getCurrentWeekDates";
 
 export function getMonthlyHours(
   shifts: Shift[],
@@ -6,7 +7,7 @@ export function getMonthlyHours(
   year: number = new Date().getFullYear()
 ): number {
   return shifts.reduce((sum, shift) => {
-    const shiftDate = shift.date.toDate();
+    const shiftDate = normalizeDate(shift.date);
     if (shiftDate.getMonth() !== month || shiftDate.getFullYear() !== year) return sum;
 
     if (!shift.startTime || !shift.endTime) return sum;

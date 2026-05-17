@@ -1,3 +1,5 @@
+import { normalizeDate } from "./getCurrentWeekDates";
+
 export type WeekDay = {
   iso: string;
   date: Date;
@@ -35,23 +37,6 @@ export function getWeekDates(referenceDate: Date = new Date(), weekStartsOn: 0 |
 }
 
 export default { getWeekDates, toISODate };
-
-
-import { Timestamp } from "firebase/firestore";
-
-export function normalizeDate(date: any): Date {
-  if (!date) return new Date();
-
-  if (date instanceof Date) {
-    return date;
-  }
-
-  if (typeof date.toDate === 'function') {
-    return date.toDate();
-  }
-
-  return new Date(date);
-}
 
 export function getFormattedDate(date: Date | string) {
   const normalizedDate = new Date(date);

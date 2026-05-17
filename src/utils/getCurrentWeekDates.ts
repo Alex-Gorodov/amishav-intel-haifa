@@ -1,3 +1,17 @@
+export function normalizeDate(date: any): Date {
+  if (!date) return new Date();
+
+  if (date instanceof Date) {
+    return date;
+  }
+
+  if (typeof date.toDate === 'function') {
+    return normalizeDate(date);
+  }
+
+  return new Date(date);
+}
+
 export function getCurrentWeekDates(reference = new Date(), startOfWeek: 'mon' | 'sun' = 'mon') {
   const d = new Date(reference);
 
@@ -29,6 +43,13 @@ export function formatHeaderDate(dt: Date) {
   return dt.toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric' });
 }
 
-export function isSameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+export function isSameDay(a: any, b: any): boolean {
+  const dateA = normalizeDate(a);
+  const dateB = normalizeDate(b);
+
+  return (
+    dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate()
+  );
 }

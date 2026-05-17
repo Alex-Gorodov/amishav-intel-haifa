@@ -23,6 +23,7 @@ import { saveMultipleUsersShifts } from '../store/api/saveShifts.api';
 import { updateUserShifts } from '../store/actions';
 import { fetchUsers } from '../store/api/fetchUsers.api';
 import CustomButton from '../components/CustomButton/CustomButton';
+import { normalizeDate } from '../utils/getCurrentWeekDates';
 
 export default function ScheduleCreatingScreen() {
   const users = useSelector((state: State) => state.data.users);
@@ -84,7 +85,7 @@ export default function ScheduleCreatingScreen() {
         targetWeekEnd.setDate(targetWeekStart.getDate() + 7);
 
         const shiftsOutsideTargetWeek = existingShifts.filter(shift => {
-          const shiftDate = shift.date.toDate();
+          const shiftDate = normalizeDate(shift.date);
           return shiftDate < targetWeekStart || shiftDate >= targetWeekEnd;
         });
 
@@ -189,11 +190,11 @@ export default function ScheduleCreatingScreen() {
         renderItem={({ item: u }) => {
           const commentsForWeek = u.availability
             .filter(av =>
-              week.some(d => toISODate(av.date.toDate()) === d.iso)
+              week.some(d => toISODate(normalizeDate(av.date)) === d.iso)
             )
             .filter(av => av.comment && av.comment.trim() !== '')
             .map(av => ({
-              date: av.date.toDate(),
+              date: normalizeDate(av.date),
               comment: av.comment,
             }));
           return (
@@ -246,7 +247,7 @@ export default function ScheduleCreatingScreen() {
                       const key = `${u.id}-${d.date.getTime()}`;
 
                       const a =
-                        u.availability.find(av => toISODate(av.date.toDate()) === d.iso) ||
+                        u.availability.find(av => toISODate(normalizeDate(av.date)) === d.iso) ||
                         { statuses: Array(3).fill(null), date: d.date };
 
                       return (

@@ -4,6 +4,7 @@ import useUser from '../../hooks/useUser';
 import PrivateShiftCard from '../PrivateShiftCard/PrivateShiftCard';
 import { useSelector } from 'react-redux';
 import { State } from '../../types/State';
+import { normalizeDate } from '../../utils/getCurrentWeekDates';
 
 export default function ScheduleListPrivate({ weekDates }: { weekDates: Date[] }) {
   const user = useUser();
@@ -25,9 +26,9 @@ export default function ScheduleListPrivate({ weekDates }: { weekDates: Date[] }
   const weeklyShifts =
     user?.shifts
       ? [...user.shifts]
-          .sort((a, b) => a.date.toDate().getTime() - b.date.toDate().getTime())
+          .sort((a, b) => normalizeDate(a.date).getTime() - normalizeDate(b.date).getTime())
           .filter((s) => {
-            const d = s.date.toDate();
+            const d = normalizeDate(s.date);
             return d >= weekStart && d <= weekEnd;
           })
       : [];

@@ -2,9 +2,10 @@ import { Shift } from "../types/Shift";
 import { ShabbatTimes } from "../types/ShabbatTimes";
 import { getWeekKeyForShift } from "./getWeekKeyForShift";
 import { getHoursString } from './getHoursString';
+import { normalizeDate } from "./getCurrentWeekDates";
 
 export const getShabbatHours = (shift: Shift, shabbatByWeek: Record<string, ShabbatTimes>): number => {
-  const shiftDate = shift.date.toDate();
+  const shiftDate = normalizeDate(shift.date);
   const [sh, sm] = shift.startTime.split(':').map(Number);
   const [eh, em] = shift.endTime.split(':').map(Number);
 

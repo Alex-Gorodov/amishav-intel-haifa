@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Shift } from '../types/Shift';
 import { ShabbatTimes } from '../types/ShabbatTimes';
 import { fetchShabbatTimes } from '../store/api/fetchShabbatTimes';
+import { normalizeDate } from '../utils/getCurrentWeekDates';
 
 export function useShabbatByWeek(shifts?: Shift[]) {
   const [shabbatByWeek, setShabbatByWeek] = useState<{ [weekKey: string]: ShabbatTimes }>({});
@@ -13,7 +14,7 @@ export function useShabbatByWeek(shifts?: Shift[]) {
       const newShabbatByWeek: { [weekKey: string]: ShabbatTimes } = {};
 
       for (const shift of shifts) {
-        const shiftDate = shift.date.toDate();
+        const shiftDate = normalizeDate(shift.date);
         if (!(shiftDate instanceof Date)) continue;
 
         const day = shiftDate.getDay();

@@ -3,6 +3,7 @@ import { SWAP_REQUESTS, GIVE_REQUESTS } from "../../constants";
 import { SwapShiftRequest, GiveShiftRequest } from "../../types/Request";
 import { AppDispatch } from "../../types/State";
 import { setRequestsDataLoading, loadRequests } from "../actions";
+import { normalizeDate } from "../../utils/getCurrentWeekDates";
 
 // fetch swap requests
 export const fetchSwapRequests = async (dispatch: AppDispatch) => {
@@ -17,8 +18,8 @@ export const fetchSwapRequests = async (dispatch: AppDispatch) => {
         id: doc.id,
         type: 'swap',
         status: requestData.status || 'pending',
-        createdAt: requestData.createdAt?.toDate ? requestData.createdAt.toDate() : new Date(),
-        updatedAt: requestData.updatedAt?.toDate ? requestData.updatedAt.toDate() : new Date(),
+        createdAt: requestData.createdAt?.toDate ? normalizeDate(requestData.createdAt) : new Date(),
+        updatedAt: requestData.updatedAt?.toDate ? normalizeDate(requestData.updatedAt) : new Date(),
         details: requestData.details || '',
         firstUserId: requestData.firstUserId,
         secondUserId: requestData.secondUserId,
@@ -47,8 +48,8 @@ export const fetchGiveRequests = async (dispatch: AppDispatch) => {
         id: doc.id,
         type: 'give',
         status: requestData.status || 'pending',
-        createdAt: requestData.createdAt?.toDate ? requestData.createdAt.toDate() : new Date(),
-        updatedAt: requestData.updatedAt?.toDate ? requestData.updatedAt.toDate() : new Date(),
+        createdAt: requestData.createdAt?.toDate ? normalizeDate(requestData.createdAt) : new Date(),
+        updatedAt: requestData.updatedAt?.toDate ? normalizeDate(requestData.updatedAt) : new Date(),
         details: requestData.details || '',
         firstUserId: requestData.firstUserId,
         secondUserId: requestData.secondUserId,

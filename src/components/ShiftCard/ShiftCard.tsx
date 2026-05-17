@@ -4,6 +4,7 @@ import { getWeekKeyForShift } from '../../utils/getWeekKeyForShift';
 import { getShiftDuration } from '../../utils/getShiftDuration';
 import { getShabbatHours } from '../../utils/getShabbatHours';
 import { Colors } from '../../constants';
+import { normalizeDate } from '../../utils/getCurrentWeekDates';
 
 interface ShiftCardProps {
   shift: any;
@@ -13,7 +14,7 @@ interface ShiftCardProps {
 }
 
 export default function ShiftCard({ shift, index, shabbatByWeek, keyPrefix = 'shift' }: ShiftCardProps) {
-  const shiftDate = shift.date.toDate();
+  const shiftDate = normalizeDate(shift.date);
   const weekKey = getWeekKeyForShift(shiftDate);
   const shabbat = shabbatByWeek[weekKey];
   const hours = getShiftDuration(shift);

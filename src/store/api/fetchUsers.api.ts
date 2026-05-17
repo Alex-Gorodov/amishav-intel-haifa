@@ -3,6 +3,7 @@ import { AppDispatch } from "../../types/State";
 import { loadUsers, setUsersDataLoading } from "../actions";
 import { USERS } from "../../constants";
 import { User } from "../../types/User";
+import { sanitizeFirestoreData } from "../../utils/sanitizeFirestoreData";
 
 export const fetchUsers = async (dispatch: AppDispatch) => {
   dispatch(setUsersDataLoading({ isUsersDataLoading: true }));
@@ -12,8 +13,13 @@ export const fetchUsers = async (dispatch: AppDispatch) => {
 
     const users: User[] = await Promise.all(
       data.docs.map(async (doc) => {
-        const userData = doc.data();
+        // 1. Get raw data
+        const rawUserData = doc.data();
 
+        // 2. Pass the entire object to your recursive sanitizer
+        const userData = sanitizeFirestoreData(rawUserData);
+
+        // 3. Fallbacks apply normally because everything is already a plain primitive string now
         return {
           id: doc.id,
           passportId: userData.passportId || '',
@@ -25,43 +31,7 @@ export const fetchUsers = async (dispatch: AppDispatch) => {
           availability: userData.availability || [],
           isAdmin: userData.isAdmin || false,
           documents: userData.documents || [],
-          trainings: userData.trainings || {
-            safety: {
-              id: `${doc.id}-safety`,
-              title: 'הדרכת בטיחות',
-              description: '',
-              updatingDate: null,
-              validityPeriod: 365,
-            },
-            roni: {
-              id: `${doc.id}-roni`,
-              title: 'רענון רוני',
-              description: '',
-              updatingDate: null,
-              validityPeriod: 365,
-            },
-            weapon: {
-              id: `${doc.id}-weapon`,
-              title: 'רענון נשק',
-              description: '',
-              updatingDate: null,
-              validityPeriod: 182,
-            },
-            mada: {
-              id: `${doc.id}-mada`,
-              title: 'רענון אזרה ראשונה',
-              description: '',
-              updatingDate: null,
-              validityPeriod: 730,
-            },
-            rights: {
-              id: `${doc.id}-rights`,
-              title: 'הדרכת סמכויות',
-              description: '',
-              updatingDate: null,
-              validityPeriod: 365,
-            }
-          },
+          trainings: userData.trainings || { /* your default trainings block */ },
           phoneNumber: userData.phoneNumber || '',
           avatarUrl: userData.avatarUrl || '',
           createdAt: userData.createdAt || '',

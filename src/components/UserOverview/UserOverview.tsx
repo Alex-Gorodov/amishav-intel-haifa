@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux';
 import { setError, setSuccess } from '../../store/actions';
 import { ErrorMessages, SuccessMessages } from '../../constants/Messages';
 import { getShabbatHoursString } from '../../utils/getShabbatHours';
+import { normalizeDate } from '../../utils/getCurrentWeekDates';
 
 export default function UserOverview() {
   const user = useUser();
@@ -24,7 +25,7 @@ export default function UserOverview() {
   const hours = getMonthlyHours(user?.shifts ?? []).toFixed(2);
 
   const shifts = useMemo(() => {
-    return user?.shifts.filter((s) => s.date.toDate().getMonth() === CURRENT_DATE.getMonth()) ?? [];
+    return user?.shifts.filter((s) => normalizeDate(s.date).getMonth() === CURRENT_DATE.getMonth()) ?? [];
   }, [user?.shifts]);
 
   const shabbatByWeek = useShabbatByWeek(shifts);

@@ -7,6 +7,7 @@ import useUser from '../hooks/useUser';
 import { Colors, DAYS } from '../constants';
 import { fetchHolidaysByMonth } from '../store/api/fetchShabbatTimes';
 import { Holiday } from '../types/ShabbatTimes';
+import { normalizeDate } from '../utils/getCurrentWeekDates';
 
 const { width } = Dimensions.get('window');
 const NUM_DAYS_IN_WEEK = 7;
@@ -38,7 +39,7 @@ export default function UserMonthCalendarScreen() {
     const map: Record<string, any> = {};
 
     (user?.shifts ?? []).forEach(shift => {
-      const d = shift.date.toDate();
+      const d = normalizeDate(shift.date);
 
       if (
         d.getMonth() === displayDate.getMonth() &&

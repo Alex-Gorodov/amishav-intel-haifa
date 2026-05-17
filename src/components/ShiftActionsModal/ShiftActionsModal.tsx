@@ -17,6 +17,7 @@ import { getRoleLabel } from '../../utils/getRoleLabel';
 import CloseButton from '../CloseButton/CloseButton';
 import { User } from '../../types/User';
 import { getAvailableUsersByPost } from '../../utils/getAvailablePostsByRole';
+import { normalizeDate } from '../../utils/getCurrentWeekDates';
 
 interface ShiftActionsModalProps {
   visible: boolean;
@@ -127,7 +128,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
 
           const targetDate =
             "toDate" in targetShift.date
-              ? targetShift.date.toDate()
+              ? normalizeDate(targetShift.date)
               : new Date(targetShift.date);
 
           const inWeek = targetDate >= start && targetDate < end;
@@ -152,10 +153,10 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
     })
     .sort((a, b) => {
       const dateA =
-        "toDate" in a.date ? a.date.toDate() : new Date(a.date);
+        "toDate" in a.date ? normalizeDate(a.date) : new Date(a.date);
 
       const dateB =
-        "toDate" in b.date ? b.date.toDate() : new Date(b.date);
+        "toDate" in b.date ? normalizeDate(b.date) : new Date(b.date);
 
       return dateA.getTime() - dateB.getTime();
     });
@@ -167,7 +168,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
   return availableShifts.reduce((acc, item) => {
     const date =
       "toDate" in item.date
-        ? item.date.toDate()
+        ? normalizeDate(item.date)
         : new Date(item.date);
 
     const dateStr = date.toLocaleDateString("he-IL");

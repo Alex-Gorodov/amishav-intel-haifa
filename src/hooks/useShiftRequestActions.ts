@@ -6,13 +6,14 @@ import { fetchGiveRequests, fetchSwapRequests } from '../store/api/fetchRequests
 import useUser from './useUser';
 import { setError, setSuccess } from '../store/actions';
 import { ErrorMessages, SuccessMessages } from '../constants/Messages';
+import { normalizeDate } from '../utils/getCurrentWeekDates';
 
 export const useShiftRequestActions = () => {
   const user = useUser();
   const dispatch = useDispatch();
 
   const isFutureShift = (shift: Shift) => {
-    const shiftDate = shift.date.toDate();
+    const shiftDate = normalizeDate(shift.date);
 
     const [hours, minutes] = shift.startTime
       .split(':')

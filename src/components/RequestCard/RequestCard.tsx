@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { StatusLabels } from "../../constants/StatusLabels";
 import { GiveRequestWithShift, RequestStatus, SwapRequestWithShifts } from "../../types/Request";
 import { Colors } from "../../constants";
+import { normalizeDate } from "../../utils/getCurrentWeekDates";
 
 interface RequestCardProps {
   req: GiveRequestWithShift | SwapRequestWithShifts;
@@ -52,7 +53,7 @@ export const RequestCard = ({
               {req.fromShift?.post?.title || 'לא ידוע'}
             </Text>
             <Text style={styles.text}>
-              {req.fromShift?.date?.toDate().toLocaleDateString('he-IL')}
+              {normalizeDate(req.fromShift?.date)?.toLocaleDateString('he-IL')}
             </Text>
           </View>
           <View>
@@ -63,7 +64,7 @@ export const RequestCard = ({
             {/* <Text style={styles.text}>
             </Text> */}
             <Text style={styles.text}>
-              {req.toShift?.date?.toDate().toLocaleDateString('he-IL')}
+              {normalizeDate(req.toShift?.date)?.toLocaleDateString('he-IL')}
             </Text>
           </View>
         </View>
@@ -73,7 +74,7 @@ export const RequestCard = ({
             {req.fromShift?.post?.title || 'לא ידוע'}
           </Text>
           <Text style={styles.text}>
-            {req.fromShift?.date?.toDate().toLocaleDateString('he-IL')}
+            {normalizeDate(req.fromShift?.date)?.toLocaleDateString('he-IL')}
           </Text>
         </View>
       )}

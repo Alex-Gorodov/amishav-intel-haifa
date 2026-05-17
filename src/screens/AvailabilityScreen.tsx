@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import AvailabilityButton from '../components/AvailabilityButton/AvailabilityButton';
-import { getWeekDates, normalizeDate } from '../utils/dateUtils'; // Ensure normalizeDate is imported here ⚡
+import { getWeekDates } from '../utils/dateUtils';
 import CustomButton from '../components/CustomButton/CustomButton';
 import { Timestamp, doc, setDoc } from "firebase/firestore";
 import useUser from '../hooks/useUser';
@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { updateAvailability } from '../store/actions';
 import useRefresh from '../hooks/useRefresh';
 import { Colors } from '../constants';
+import { normalizeDate } from '../utils/getCurrentWeekDates';
 
 export default function AvailabilityScreen() {
   const user = useUser();
