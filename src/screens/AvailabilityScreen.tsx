@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, ActivityIndicator, RefreshControl, StyleSheet, Pressable } from 'react-native';
+import { View, FlatList, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import AvailabilityButton from '../components/AvailabilityButton/AvailabilityButton';
-import { getWeekDates } from '../utils/dateUtils';
+import { getWeekDates, normalizeDate } from '../utils/dateUtils'; // Ensure normalizeDate is imported here ⚡
 import CustomButton from '../components/CustomButton/CustomButton';
 import { Timestamp, doc, setDoc } from "firebase/firestore";
 import useUser from '../hooks/useUser';
@@ -19,15 +19,13 @@ export default function AvailabilityScreen() {
 
   const today = new Date();
   const nextWeekStart = new Date();
-  nextWeekStart.setDate(today.getDate() + (7 - today.getDay())); // начало следующей недели
+  nextWeekStart.setDate(today.getDate() + (7 - today.getDay()));
 
   const [currentWeekStart, setCurrentWeekStart] = useState(nextWeekStart);
   const [week, setWeek] = useState(getWeekDates(currentWeekStart, 0, 'he-IL'));
 
   const [isPrevWeekBlocked, setPrevWeekBlocked] = useState(true);
-  const [comments, setComments] = useState<string[]>(
-    week.map(() => '')
-  );
+  const [comments, setComments] = useState<string[]>(week.map(() => ''));
 
   const [weekAvailabilityState, setWeekAvailabilityState] = useState<boolean[][]>(
     week.map((day, i) => user?.availability?.[i]?.statuses ?? [true, true, true])
@@ -37,30 +35,31 @@ export default function AvailabilityScreen() {
   const [sentSuccess, setSentSuccess] = useState(false);
 
   useEffect(() => {
-  if (!user || !currentWeekStart) return;
+    if (!user || !currentWeekStart) return;
 
-  const newW = getWeekDates(currentWeekStart, 0, 'he-IL');
-  setWeek(newW);
+    const newW = getWeekDates(currentWeekStart, 0, 'he-IL');
+    setWeek(newW);
 
-  const newReq = newW.map((day) => {
-    const ex = user?.availability?.find(
-      (r) => r.date.toDate().toDateString() === day.date.toDateString()
-    );
-    return ex?.statuses ?? [true, true, true];
-  });
+    const newReq = newW.map((day) => {
+      const ex = user?.availability?.find(
+        // ✅ FIX 1: Wrap r.date in normalizeDate to handle string or legacy objects safely
+        (r) => normalizeDate(r.date).toDateString() === day.date.toDateString()
+      );
+      return ex?.statuses ?? [true, true, true];
+    });
 
-  setWeekAvailabilityState(newReq);
+    setWeekAvailabilityState(newReq);
 
-  const newComments = newW.map((day) => {
-    const ex = user?.availability?.find(
-      (r) => r.date.toDate().toDateString() === day.date.toDateString()
-    );
-    return ex?.comment ?? '';
-  });
+    const newComments = newW.map((day) => {
+      const ex = user?.availability?.find(
+        // ✅ FIX 2: Use normalizeDate here as well
+        (r) => normalizeDate(r.date).toDateString() === day.date.toDateString()
+      );
+      return ex?.comment ?? '';
+    });
 
-  setComments(newComments);
-
-}, [user, currentWeekStart]);
+    setComments(newComments);
+  }, [user, currentWeekStart]);
 
   const refresh = useRefresh();
 
@@ -83,14 +82,16 @@ export default function AvailabilityScreen() {
 
     const oldAvailability = user.availability ?? [];
 
-    const today = new Date();
+    const todayDate = new Date();
     const filteredOld = oldAvailability.filter((req) => {
-      return req.date.toDate() >= today;
+      // ✅ FIX 3: normalizeDate handles comparison safely regardless of origin state
+      return normalizeDate(req.date) >= todayDate;
     });
 
     const currentWeekDates = week.map((d) => d.date.toDateString());
     const withoutCurrentWeek = filteredOld.filter((req) => {
-      return !currentWeekDates.includes(req.date.toDate().toDateString());
+      // ✅ FIX 4: Secure check against structural exceptions
+      return !currentWeekDates.includes(normalizeDate(req.date).toDateString());
     });
 
     const mergedAvailability = [...withoutCurrentWeek, ...newWeekAvailability];
@@ -106,40 +107,22 @@ export default function AvailabilityScreen() {
     fetchUsers(dispatch);
     setTimeout(() => setSentSuccess(false), 3000);
     setIsSending(false);
-
   };
-
-
-  // const handleNextWeek = () => {
-  //   const next = new Date(currentWeekStart);
-  //   next.setDate(next.getDate() + 7);
-  //   setCurrentWeekStart(next);
-  //   setWeek(getWeekDates(next, 0, 'he-IL'));
-  //   setPrevWeekBlocked(false);
-
-  //   const newReq = getWeekDates(next, 0, 'he-IL').map((day) => {
-  //     const ex = user?.availability?.find((r) =>
-  //       r.date.toDate().toDateString() === day.date.toDateString()
-  //     );
-  //     return ex?.statuses ?? [true, true, true];
-  //   });
-  //   setWeekAvailabilityState(newReq);
-  // };
 
   const handleNextWeek = () => {
     const next = new Date(currentWeekStart);
     next.setDate(next.getDate() + 7);
 
-    const newW = getWeekDates(next, 0, 'he-IL'); // ✅ ДОБАВИТЬ
+    const newW = getWeekDates(next, 0, 'he-IL');
 
     setCurrentWeekStart(next);
     setWeek(newW);
-    // setComments(newW.map(() => '')); // ✅ теперь ок
     setPrevWeekBlocked(false);
 
     const newReq = newW.map((day) => {
       const ex = user?.availability?.find((r) =>
-        r.date.toDate().toDateString() === day.date.toDateString()
+        // ✅ FIX 5: normalizeDate inside pagination controls
+        normalizeDate(r.date).toDateString() === day.date.toDateString()
       );
       return ex?.statuses ?? [true, true, true];
     });
@@ -161,11 +144,11 @@ export default function AvailabilityScreen() {
     setCurrentWeekStart(prev);
     const newW = getWeekDates(prev, 0, 'he-IL');
     setWeek(newW);
-    // setComments(newW.map(() => ''));
 
     const newReq = newW.map((day) => {
       const ex = user?.availability?.find((r) =>
-        r.date.toDate().toDateString() === day.date.toDateString()
+        // ✅ FIX 6: final safe validation check
+        normalizeDate(r.date).toDateString() === day.date.toDateString()
       );
       return ex?.statuses ?? [true, true, true];
     });
