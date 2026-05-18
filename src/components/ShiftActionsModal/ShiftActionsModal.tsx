@@ -17,7 +17,9 @@ import { getRoleLabel } from '../../utils/getRoleLabel';
 import CloseButton from '../CloseButton/CloseButton';
 import { User } from '../../types/User';
 import { getAvailableUsersByPost } from '../../utils/getAvailablePostsByRole';
-import { normalizeDate } from '../../utils/getCurrentWeekDates';
+import { parseShiftDate } from '../../utils/parseShiftDate';
+import { Post } from '../../types/Post';
+import { Posts } from '../../constants/Posts';
 
 interface ShiftActionsModalProps {
   visible: boolean;
@@ -27,12 +29,13 @@ interface ShiftActionsModalProps {
   modalDate: string;
   modalView: ModalView;
   modalTimes: string;
+  scheduleType?: string;
   remarkTitle: string;
   guardTasks: GuardTask[];
   onClose: () => void;
 }
 
-export default function ShiftActionsModal({visible, currentShift, isMyShift, remarkText, modalDate, modalTimes, remarkTitle, guardTasks, onClose}: ShiftActionsModalProps) {
+export default function ShiftActionsModal({visible, scheduleType,currentShift, isMyShift, remarkText, modalDate, modalTimes, remarkTitle, guardTasks, onClose}: ShiftActionsModalProps) {
   const users = useSelector((state: State) => state.data.users);
   const user = useUser();
 
@@ -108,11 +111,11 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
 
     // A must be able to work B's shift
     const aCanTakeB =
-      getAvailableUsersByPost([userA], shiftB.post.id).length > 0;
+      getAvailableUsersByPost([userA], shiftB.post.id, contextPosts)?.length > 0;
 
     // B must be able to work A's shift
     const bCanTakeA =
-      getAvailableUsersByPost([userB], shiftA.post.id).length > 0;
+      getAvailableUsersByPost([userB], shiftA.post.id, contextPosts)?.length > 0;
 
     return aCanTakeB && bCanTakeA;
   };
@@ -126,10 +129,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
         .filter(targetShift => {
           if (!targetShift?.date) return false;
 
-          const targetDate =
-            "toDate" in targetShift.date
-              ? normalizeDate(targetShift.date)
-              : new Date(targetShift.date);
+          const targetDate = parseShiftDate(targetShift.date);
 
           const inWeek = targetDate >= start && targetDate < end;
 
@@ -152,11 +152,8 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
         }));
     })
     .sort((a, b) => {
-      const dateA =
-        "toDate" in a.date ? normalizeDate(a.date) : new Date(a.date);
-
-      const dateB =
-        "toDate" in b.date ? normalizeDate(b.date) : new Date(b.date);
+      const dateA = parseShiftDate(a.date);
+      const dateB = parseShiftDate(b.date);
 
       return dateA.getTime() - dateB.getTime();
     });
@@ -166,10 +163,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
   if (!availableShifts) return {};
 
   return availableShifts.reduce((acc, item) => {
-    const date =
-      "toDate" in item.date
-        ? normalizeDate(item.date)
-        : new Date(item.date);
+    const date = parseShiftDate(item.date);
 
     const dateStr = date.toLocaleDateString("he-IL");
 
@@ -180,18 +174,48 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
   }, {} as Record<string, typeof availableShifts>);
 }, [availableShifts]);
 
+const securityPosts = useSelector((state: any) => state.data.securityPosts);
+  const occPosts = useSelector((state: any) => state.data.controllCenterPosts);
+  const dertPosts = useSelector((state: any) => state.data.dertPosts);
+
+  const contextPosts: Post[] = useMemo(() => {
+    let selectedSlice: Post[] = [];
+
+    switch (scheduleType?.toLowerCase()) {
+      case 'security':
+        selectedSlice = securityPosts;
+        break;
+      case 'occ':
+      case 'controllcenter':
+        selectedSlice = occPosts;
+        break;
+      case 'dert':
+        selectedSlice = dertPosts;
+        break;
+      default:
+        selectedSlice = [];
+    }
+
+    // 🔥 CRITICAL FIX: If Redux hasn't loaded the slice, or if it's empty,
+    // fall back to the global Posts constant so lookups do not break.
+    if (!selectedSlice || selectedSlice.length === 0) {
+      return Posts;
+    }
+
+    return selectedSlice;
+  }, [scheduleType, securityPosts, occPosts, dertPosts]);
 
   const relevantUsersToGive = useMemo(() => {
     if (!users || !currentShift) return [];
 
-    const myRole = getRoleByPost(currentShift.post.id);
+    const myRole = getRoleByPost(currentShift.post.id, contextPosts);
     if (!myRole) return [];
 
     return users.filter(u => {
       if (u.id === user?.id) return false;
 
       return (u.shifts || []).some(
-        s => getRoleByPost(s.post.id) === myRole
+        s => getRoleByPost(s.post.id, contextPosts) === myRole
       );
     });
   }, [users, currentShift, user]);
@@ -207,19 +231,27 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
     }
 
     if (isSwapView) {
-      return Object.keys(groupedShifts).length
+      return Object.keys(groupedShifts || {})?.length > 0
         ? SCREEN_HEIGHT * 0.7
         : SCREEN_HEIGHT * 0.25;
     }
 
     if (isGiveView) {
-      return relevantUsersToGive.length !== 0
+      return (relevantUsersToGive || [])?.length > 0
         ? SCREEN_HEIGHT * 0.7
         : SCREEN_HEIGHT * 0.25;
     }
 
     return SCREEN_HEIGHT * 0.5;
-  }, [modalView, groupedShifts, isMyShift]);
+  }, [
+    modalView,
+    groupedShifts,
+    relevantUsersToGive,
+    isMyShift,
+    isDetailsView,
+    isSwapView,
+    isGiveView,
+  ]);
 
   useEffect(() => {
     if (!visible) return;
@@ -267,7 +299,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
                   </View>
 
                   {
-                    guardTasks.length !== 0 &&
+                    guardTasks?.length !== 0 &&
                     <View>
                       <Text style={{ fontWeight: 600, marginBottom: 8, textAlign: 'right' }}>
                         מסימות:
@@ -317,7 +349,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
                   </Text>
 
                   {
-                    relevantUsersToGive.length !== 0
+                    (relevantUsersToGive ?? []).length > 0
                     ? (
                       <ScrollView
                         style={[styles.modalShiftsList, {height: SCREEN_HEIGHT - 430}]}
@@ -377,7 +409,7 @@ export default function ShiftActionsModal({visible, currentShift, isMyShift, rem
                     בחר משמרת איתה תרצה להתחלף
                   </Text>
                   {
-                    Object.entries(groupedShifts).length !== 0
+                    Object.entries(groupedShifts)?.length !== 0
                     ?
                     <ScrollView style={[styles.modalShiftsList, {height: SCREEN_HEIGHT - 430}]}>
                       {Object.entries(groupedShifts).map(([date, shifts]) => (

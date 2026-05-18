@@ -2,11 +2,12 @@ import { useSelector } from "react-redux";
 // import { Posts } from "../constants/Posts";
 import { Tariffs } from "../constants/Tariffs";
 import { RootState } from "../store/root-reducer";
+import { Post } from "../types/Post";
 
-export const getRoleByPost = (postId: string) => {
-  const posts = useSelector((state: RootState) => state.data.posts)
+export const getRoleByPost = (postId: string, posts?: Post[]) => {
 
-  const post = posts.find(p => p.id === postId);
+
+  const post = posts?.find(p => p.id === postId);
   if (!post) return null;
 
   switch (post.hourlyRate) {

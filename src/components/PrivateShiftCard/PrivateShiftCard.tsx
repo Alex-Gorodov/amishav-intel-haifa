@@ -4,6 +4,7 @@ import { Shift } from '../../types/Shift';
 import { GuardTasks, BlockedOnWeekend } from '../../constants/GuardTasks';
 import { GuardTask } from '../../types/GuardTask';
 import ShiftActionsModal from '../ShiftActionsModal/ShiftActionsModal';
+import { normalizeDate } from '../../utils/getCurrentWeekDates';
 
 interface PrivateShiftCardProps {
   shift: Shift;
@@ -13,7 +14,7 @@ interface PrivateShiftCardProps {
 }
 
 export default function PrivateShiftCard({ shift, onToggleMenu }: PrivateShiftCardProps) {
-  const date = shift.date.toDate();
+  const date = normalizeDate(shift.date);
   const formattedDate = date.toLocaleDateString('he-IL', { weekday: 'long', day: '2-digit', month: '2-digit' });
   const [tasksForShift, setTasksForShift] = useState<GuardTask[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
