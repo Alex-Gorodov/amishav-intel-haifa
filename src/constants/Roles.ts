@@ -7,3 +7,16 @@ export const Roles = [
   { value: "dert_member", label: "רספונדר" },
   { value: "security_guard", label: "מאבטח" },
 ] as const;
+
+export const HIGH_AUTH_ROLES = [
+  "shift_manager",
+  "supervisor",
+  "dert_leader",
+  "security_shift_leader",
+];
+
+export const STANDARD_ROLES = [
+  "controller",
+  "dert_member",
+  "security_guard",
+];

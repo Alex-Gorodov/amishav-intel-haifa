@@ -3,6 +3,7 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import useUser from '../../hooks/useUser';
 import { Colors } from '../../constants';
+import { HIGH_AUTH_ROLES, STANDARD_ROLES } from '../../constants/Roles';
 
 type ShiftRow = {
   id: string;
@@ -25,6 +26,32 @@ export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnW
   const headerRef = useRef<ScrollView | null>(null);
   const mainListRef = useRef<FlatList<any> | null>(null);
   const rightListRef = useRef<FlatList<any> | null>(null);
+
+  const getBackgroundColorForShift = (shiftValue: string | null) => {
+    if (!shiftValue) return 'transparent';
+    console.log(shiftValue);
+
+
+    const value = shiftValue.toLowerCase();
+
+    const isHighAuth = Array.from(HIGH_AUTH_ROLES).some(role =>
+      value.includes(role.toLowerCase())
+    );
+
+    const isStandard = Array.from(STANDARD_ROLES).some(role =>
+      value.includes(role.toLowerCase())
+    );
+
+    if (isHighAuth) {
+      return '#cfe8ff'; // light blue (higher responsibility)
+    }
+
+    if (isStandard) {
+      return '#dff7df'; // light green (standard staff)
+    }
+
+    return '#e6e6e6'; // fallback (unknown shift type)
+  };
 
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isMarked, setMarked] = useState(false);
@@ -117,6 +144,7 @@ export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnW
               ? (isMarked && isUserAssigned ? Colors.accent : '#e6e6e6ff')
               : (isMarked && isUserAssigned ? Colors.accent : 'transparent');
 
+
           return (
             <TouchableOpacity
                 key={i}
@@ -133,9 +161,9 @@ export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnW
                   let remark = '';
                   if (raw && typeof raw === 'object') remark = (raw.remark ?? JSON.stringify(raw));
                   else if (raw) remark = String(raw);
-                  // fallback to show raw data for debugging if remark is empty
                 }}
               >
+                {/* TODO background-color for roles */}
                 <Text style={[styles.cellText, {fontSize: 14, textAlign: 'center'}]} numberOfLines={2} ellipsizeMode="tail">{value ?? ''}</Text>
               </TouchableOpacity>
           );
@@ -145,14 +173,8 @@ export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnW
     </View>
   );
 
-  console.log('windowHeight', windowHeight);
-  console.log('windowHeight', windowHeight);
-  console.log();
-
-
   const gridHeight = Math.max(120, windowHeight - headerHeight - 360);
 
-  console.log('gridHeight', gridHeight);
   // On mount, scroll the horizontal area and header to the end (right side)
   useEffect(() => {
     // wait for layout to settle
@@ -199,6 +221,7 @@ export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnW
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => (
             <View style={styles.rightCell}>
+              {/* TODO background-color for roles */}
               <Text style={styles.cellText} numberOfLines={2} ellipsizeMode="tail">{item.name}</Text>
             </View>
           )}
@@ -220,7 +243,7 @@ const styles = StyleSheet.create({
   cell: { height: 50, padding: 0, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1, borderBottomWidth: 1, borderColor: Colors.tableBorder },
   cellText: { fontSize: 10, flexWrap: 'wrap', textAlign: 'right' },
   rightHeader: { flexDirection: 'row', justifyContent: 'center', borderLeftWidth: 1,  borderColor: '#6f6f6f' },
-  rightCell: { padding: 8, height: 50, justifyContent: 'center', alignItems: 'center', borderLeftWidth: 2, borderBottomWidth: 1, borderColor: Colors.tableBorder },
+  rightCell: { padding: 8, height: 50, justifyContent: 'center', borderLeftWidth: 2, borderBottomWidth: 1, borderColor: Colors.tableBorder },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
   modalCard: { width: '80%', backgroundColor: '#eee', padding: 16, borderRadius: 12, alignItems: 'center' },
   modalText: { marginBottom: 12, textAlign: 'center', color: Colors.mainDark },
