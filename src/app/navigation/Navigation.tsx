@@ -21,7 +21,9 @@ import ScheduleStackNavigator from '../ScheduleNavigator/ScheduleNavigator';
 import CustomTabBar from '../../components/CustomTabBar/CustomTabBar';
 import { Dispatch, UnknownAction } from '@reduxjs/toolkit';
 import { fetchProtocolsPreview } from '../../store/api/fetchProtocolsPreview.api';
-import { fetchPosts } from '../../store/api/fetchPosts.api';
+import { fetchSecurityPosts } from '../../store/api/fetchSecurityPosts.api';
+import { fetchControllCenterPosts } from '../../store/api/fetchControlCenterPosts.api';
+import { fetchDertPosts } from '../../store/api/fetchDertPosts.api';
 
 
 export default function Navigation() {
@@ -33,7 +35,9 @@ export default function Navigation() {
 
   useEffect(() => {
     fetchUsers(dispatch);
-    fetchPosts(dispatch);
+    fetchSecurityPosts(dispatch);
+    fetchControllCenterPosts(dispatch);
+    fetchDertPosts(dispatch);
     fetchProtocolsPreview(dispatch);
     fetchSwapRequests(dispatch);
     fetchGiveRequests(dispatch);
@@ -55,7 +59,7 @@ export default function Navigation() {
       ? allRequests.filter(req => req.secondUserId === user.id)
       : [];
 
-  const hasTrainingsExpired = user?.trainings.roni.updatingDate
+  // const hasTrainingsExpired = user?.trainings.roni.updatingDate
 
 
   return (

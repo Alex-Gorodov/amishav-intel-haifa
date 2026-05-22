@@ -10,8 +10,11 @@ import { db } from "../../services/firebaseConfig";
 import TimePicker from "../TimePicker/TimePicker";
 import { useDispatch, useSelector } from "react-redux";
 import { Colors } from "../../constants";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { getAvailablePostsByRole } from "../../utils/getAvailablePostsByRole";
+import useUser from "../../hooks/useUser";
 import { RootState } from "../../store/root-reducer";
+import { getAssignablePostsForUser } from "../../utils/getAssignablePostsForUser";
 
 interface Props {
   isOpened: boolean;
@@ -20,6 +23,8 @@ interface Props {
 }
 
 export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
+  const user = useUser();
+
   const [selectedPost, setSelectedPost] = useState<string | null>(null);
   const [date, setDate] = useState(new Date());
   const [startTime, setStartTime] = useState("");
@@ -39,7 +44,16 @@ export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
     setRemark("");
   };
 
-  const posts = useSelector((state: RootState) => state.data.posts);
+  // const secutityPosts = useSelector((state: RootState) => state.data.securityPosts);
+  // const controllCenterPosts = useSelector((state: RootState) => state.data.controllCenterPosts);
+  // const dertPosts = useSelector((state: RootState) => state.data.dertPosts);
+
+  // const allPosts = [...secutityPosts, ...controllCenterPosts, ...dertPosts];
+
+  const posts = useMemo(() => {
+    if (!user) return [];
+    return getAssignablePostsForUser(user);
+  }, [user]);
 
   const handlePostSelect = (postId: string) => {
     setSelectedPost(postId);

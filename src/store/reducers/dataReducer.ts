@@ -1,10 +1,10 @@
 import { createReducer } from "@reduxjs/toolkit";
 import { DataState } from "../../types/State";
-import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, setTrainingUpdatingDate, loadProtocolsPreview, loadPosts } from "../actions";
+import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, setTrainingUpdatingDate, loadProtocolsPreview, loadSecurityPosts, loadControllCenterPosts, loadDertPosts } from "../actions";
 import { SwapShiftRequest, GiveShiftRequest } from "../../types/Request";
 import { regenerateShiftId } from "../../utils/regenerateShiftId";
 import { Timestamp } from "firebase/firestore";
-import { normalizeDate } from "../../utils/dateUtils";
+import { normalizeDate } from "../../utils/getCurrentWeekDates";
 
 const initialState: DataState = {
   users: [],
@@ -13,7 +13,9 @@ const initialState: DataState = {
   swapRequests: [],
   giveRequests: [],
   isRequestsDataLoading: false,
-  posts: [],
+  securityPosts: [],
+  controllCenterPosts: [],
+  dertPosts: [],
 };
 
 export const DataReducer = createReducer(initialState, (builder) => {
@@ -27,8 +29,14 @@ export const DataReducer = createReducer(initialState, (builder) => {
     .addCase(loadProtocolsPreview, (state, action) => {
       state.protocolsPreview = action.payload.protocolsPreview;
     })
-    .addCase(loadPosts, (state, action) => {
-      state.posts = action.payload.posts;
+    .addCase(loadSecurityPosts, (state, action) => {
+      state.securityPosts = action.payload.posts;
+    })
+    .addCase(loadControllCenterPosts, (state, action) => {
+      state.controllCenterPosts = action.payload.posts;
+    })
+    .addCase(loadDertPosts, (state, action) => {
+      state.dertPosts = action.payload.posts;
     })
     .addCase(updateAvailability, (state, action) => {
       const userToUpdate = state.users.find((u) => u.id === action.payload.user.id);

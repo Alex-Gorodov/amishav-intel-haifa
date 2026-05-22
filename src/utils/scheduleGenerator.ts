@@ -348,7 +348,11 @@ export function generateSchedule(
   // Получаем все посты, которые нужно заполнить
   const postsToFill: Array<{ post: Post; date: Date }> = [];
 
-  const posts = useSelector((state: RootState) => state.data.posts)
+  const securityPosts = useSelector((state: RootState) => state.data.securityPosts);
+  const controllCenterPosts = useSelector((state: RootState) => state.data.controllCenterPosts);
+  const dertPosts = useSelector((state: RootState) => state.data.dertPosts);
+
+  const posts = [...securityPosts, ...controllCenterPosts, ...dertPosts];
 
   for (const date of targetWeekDates) {
     for (const post of posts) {
@@ -367,8 +371,8 @@ export function generateSchedule(
 
   // Сортируем посты по приоритету (сначала важные роли), затем по дате и ID поста (детерминизм)
   postsToFill.sort((a, b) => {
-    const roleA = getRoleByPost(a.post.id);
-    const roleB = getRoleByPost(b.post.id);
+    const roleA = getRoleByPost(a.post.id, posts);
+    const roleB = getRoleByPost(b.post.id, posts);
 
     const rolePriority: Record<string, number> = {
       'shift_manager': 1,
@@ -390,7 +394,7 @@ export function generateSchedule(
   const nightSlotsPerRole = new Map<string, number>();
   for (const p of postsToFill) {
     if (getShiftPeriod(p.post) !== 'night') continue;
-    const role = getRoleByPost(p.post.id) || 'any';
+    const role = getRoleByPost(p.post.id, posts ) || 'any';
     nightSlotsPerRole.set(role, (nightSlotsPerRole.get(role) || 0) + 1);
   }
 
@@ -424,7 +428,7 @@ export function generateSchedule(
     const period = getShiftPeriod(post);
     const periodIndex = periodToIndex(period);
     const dateKey = toISODate(date);
-    const requiredRole = getRoleByPost(post.id);
+    const requiredRole = getRoleByPost(post.id, posts);
 
     // Собираем кандидатов: доступны, могут работать на этом посту
     const initialCandidates = users
@@ -526,7 +530,7 @@ export function generateSchedule(
         let score = wantsToWork * 1000 + experience - currentWeekShifts * 120 - currentWeekNightCount * 500 - samePostCount * 400 - samePeriodCount * 400;
 
         // Дополнительно для простых охранников усиливаем штраф за повторный пост (чтобы ротировать)
-        const role = getRoleByPost(post.id);
+        const role = getRoleByPost(post.id, posts);
         if (role === 'security_guard') {
           score -= samePostCount * 400; // сильный штраф за один и тот же пост
         }
@@ -608,7 +612,7 @@ export function generateSchedule(
 
     const diversityRejected: string[] = [];
     let candidates = initialCandidates.filter(c => {
-      const roleKey = getRoleByPost(post.id);
+      const roleKey = getRoleByPost(post.id, posts);
 
       // Ограничение для охранников: не давать один и тот же пост слишком часто
       if (roleKey === 'security_guard' && c.samePostCount >= MAX_SAMEPOST_PER_WEEK_FOR_GUARD) {
@@ -930,7 +934,7 @@ export function generateSchedule(
 
   // Debug-only fallback: попытаться заполнить критичные незаполненные посты (например, shift_manager)
   if (debug && unfilledPosts.length > 0) {
-    const managerUnfilled = unfilledPosts.filter(p => getRoleByPost(p.post.id) === 'shift_manager');
+    const managerUnfilled = unfilledPosts.filter(p => getRoleByPost(p.post.id, posts) === 'shift_manager');
     for (const { post, date, period } of managerUnfilled) {
       const dateKey = toISODate(date);
       // Расслабленные кандидаты: только проверяем роли и availability и минимальный перерыв

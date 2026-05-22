@@ -16,7 +16,9 @@ export type DataState = {
   swapRequests: SwapShiftRequest[];
   giveRequests: GiveShiftRequest[];
   isRequestsDataLoading: boolean;
-  posts: Post[];
+  securityPosts: Post[];
+  controllCenterPosts: Post[];
+  dertPosts: Post[];
 }
 
 export type AppState = {

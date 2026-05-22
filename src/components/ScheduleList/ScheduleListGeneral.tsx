@@ -10,13 +10,22 @@ import useUser from '../../hooks/useUser';
 import { useShiftRequestModal } from '../../hooks/useShiftRequestModal';
 import { getIsoLocalDateKey } from '../../utils/getIsoLocalDateKey';
 import ShiftActionsModal from '../ShiftActionsModal/ShiftActionsModal';
-import { RootState } from '../../store/root-reducer';
-import { Posts } from '../../constants/Posts';
+import { DERT_POSTS, DertPostsOrder, OCC_POSTS, OccPostsOrder, ROLE_TO_DEFAULT_SCHEDULE, ROLE_VISIBILITY, SECURITY_POSTS, SecurityPostsOrder } from '../../constants/Posts';
+import { Pressable, Text } from 'react-native';
 
 export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }) {
 
   const users = useSelector((state: State) => state.data.users);
   const user = useUser();
+
+  const userDefaultSchedule = user?.roles
+    ?.map(r => ROLE_TO_DEFAULT_SCHEDULE[r])
+    .find(Boolean) ?? "security";
+
+  const [scheduleType, setScheduleType] = useState<
+    "security" | "occ" | "dert"
+  >(userDefaultSchedule);
+
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [remarkText, setRemarkText] = useState('');
@@ -29,45 +38,70 @@ export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }
 
   const dateKeys = useMemo(() => weekDates.map(getIsoLocalDateKey), [weekDates]);
 
-  const postOrder = new Map(
-    Posts.map((p, index) => [p.id, index])
-  );
+  const posts = useMemo(() => {
+    if (!user) return [];
 
-  const posts = useSelector((state: RootState) => state.data.posts);
+    const base =
+      scheduleType === "security"
+        ? SECURITY_POSTS
+        : scheduleType === "occ"
+        ? OCC_POSTS
+        : DERT_POSTS;
+
+    return base
+      .filter(post => {
+        // ✅ ALWAYS show shift manager posts
+        if (post.role === "shift_manager") return true;
+
+        // normal visibility rules for everything else
+        const allowedRoles = new Set(
+          user.roles.flatMap(role => ROLE_VISIBILITY[role] ?? [])
+        );
+
+
+
+        return allowedRoles.has(post.role);
+      })
+      .sort((a, b) => {
+        const orderMap =
+          scheduleType === "security"
+            ? new Map(SecurityPostsOrder.map((p, i) => [p.id, i]))
+            : scheduleType === "occ"
+            ? new Map(OccPostsOrder.map((p, i) => [p.id, i]))
+            : new Map(DertPostsOrder.map((p, i) => [p.id, i]));
+
+        return (orderMap.get(a.id) ?? 9999) - (orderMap.get(b.id) ?? 9999);
+      });
+  }, [user, scheduleType]);
 
   const rows = useMemo(() => {
-  return [...posts]
-    .sort((a, b) => {
-      const aIndex = postOrder.get(a.id) ?? 9999;
-      const bIndex = postOrder.get(b.id) ?? 9999;
-      return aIndex - bIndex;
-    })
-    .map((post) => {
-      const shiftsMap: Record<string, string | null> = {};
+    return [...posts]
+      .map((post) => {
+        const shiftsMap: Record<string, string | null> = {};
 
-      dateKeys.forEach((key, idx) => {
-        const day = weekDates[idx];
+        dateKeys.forEach((key, idx) => {
+          const day = weekDates[idx];
 
-        const names = users
-          .filter((u) =>
-            u.shifts?.some(
-              (s) =>
-                isSameDay(normalizeDate(s.date), day) &&
-                s.post?.id === post.id
+          const names = users
+            .filter((u) =>
+              u.shifts?.some(
+                (s) =>
+                  isSameDay(normalizeDate(s.date), day) &&
+                  s.post?.id === post.id
+              )
             )
-          )
-          .map((u) => `${u.firstName} ${u.secondName}`);
+            .map((u) => `${u.firstName} ${u.secondName}`);
 
-        shiftsMap[key] = names.length ? names.join(', ') : null;
+          shiftsMap[key] = names.length ? names.join(', ') : null;
+        });
+
+        return {
+          id: post.id,
+          name: post.title,
+          shifts: shiftsMap,
+        };
       });
-
-      return {
-        id: post.id,
-        name: post.title,
-        shifts: shiftsMap,
-      };
-    });
-}, [users, dateKeys, posts]);
+  }, [users, dateKeys, posts]);
 
   const {
     currentShift,
@@ -86,6 +120,43 @@ export default function ScheduleListGeneral({ weekDates }: { weekDates: Date[] }
 
   return (
     <View style={styles.container}>
+      {
+        user?.roles.includes("shift_manager")
+        &&
+        <View style={styles.toggleContainer}>
+
+          <Pressable
+            style={[
+              styles.toggleButton,
+              scheduleType === "security" && styles.toggleButtonActive
+            ]}
+            onPress={() => setScheduleType("security")}
+          >
+            <Text>אבטחה</Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.toggleButton,
+              scheduleType === "occ" && styles.toggleButtonActive
+            ]}
+            onPress={() => setScheduleType("occ")}
+          >
+            <Text>חדר בקרה</Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.toggleButton,
+              scheduleType === "dert" && styles.toggleButtonActive
+            ]}
+            onPress={() => setScheduleType("dert")}
+          >
+            <Text>חירום</Text>
+          </Pressable>
+
+        </View>
+      }
       <ScheduleGrid
         dates={dateKeys}
         rows={rows}
@@ -223,5 +294,23 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     boxShadow: 'inset 0px -4px 10px 0px rgba(0,0,0,0.4)'
+  },
+
+    toggleContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    padding: 12,
+    justifyContent: 'center',
+  },
+
+  toggleButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#ddd',
+  },
+
+  toggleButtonActive: {
+    backgroundColor: '#bbb',
   },
 });

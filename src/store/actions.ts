@@ -16,8 +16,14 @@ export const loadProtocolsPreview = createAction<{protocolsPreview: ProtocolPrev
 export const setRequestsDataLoading = createAction<{isRequestsDataLoading: boolean}>('data/setRequestsDataLoading');
 export const loadRequests = createAction<{type: 'swap' | 'give', requests: SwapShiftRequest[] | GiveShiftRequest[]}>('data/loadRequests');
 
-export const setPostsDataLoading = createAction<{isPostsDataLoading: boolean}>('data/setPostsDataLoading');
-export const loadPosts = createAction<{posts: Post[]}>('data/loadPosts');
+export const setSecurityPostsDataLoading = createAction<{isPostsDataLoading: boolean}>('data/setPostsDataLoading');
+export const loadSecurityPosts = createAction<{posts: Post[]}>('data/loadPosts');
+
+export const setControllCenterPostsDataLoading = createAction<{isPostsDataLoading: boolean}>('data/setControllCenterPostsDataLoading');
+export const loadControllCenterPosts = createAction<{posts: Post[]}>('data/loadControllCenterPosts');
+
+export const setDertPostsDataLoading = createAction<{isPostsDataLoading: boolean}>('data/setDertPostsDataLoading');
+export const loadDertPosts = createAction<{posts: Post[]}>('data/loadDertPosts');
 
 export const updateAvailability = createAction<{user: User, availability: Availability[]}>('data/updateAvailability');
 

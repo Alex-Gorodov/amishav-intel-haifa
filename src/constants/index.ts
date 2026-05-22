@@ -9,7 +9,9 @@ export const GIVE_REQUESTS = collection(db, 'giveRequests');
 
 export const PROTOCOLS_HEADERS = collection(db, 'protocolsHeaders')
 
-export const POSTS = collection(db, 'posts');
+export const SECURITY_POSTS_COLLECTION = collection(db, 'posts');
+export const CONTROLL_CENTER_POSTS_COLLECTION = collection(db, 'controllCenterPosts');
+export const DERT_POSTS_COLLECTION = collection(db, 'dertPosts');
 
 export const CURRENT_DATE = new Date;
 
