@@ -24,7 +24,7 @@ import { fetchProtocolsPreview } from '../../store/api/fetchProtocolsPreview.api
 import { fetchSecurityPosts } from '../../store/api/fetchSecurityPosts.api';
 import { fetchControllCenterPosts } from '../../store/api/fetchControlCenterPosts.api';
 import { fetchDertPosts } from '../../store/api/fetchDertPosts.api';
-
+import * as Haptics from 'expo-haptics';
 
 export default function Navigation() {
   const Tab = createBottomTabNavigator<TabsList>();
@@ -66,7 +66,11 @@ export default function Navigation() {
       <Tab.Navigator
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: true }}
-
+        screenListeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          },
+        }}
       >
         <Tab.Screen
           name="Profile"
