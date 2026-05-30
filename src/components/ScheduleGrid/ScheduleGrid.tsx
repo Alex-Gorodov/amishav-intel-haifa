@@ -27,31 +27,31 @@ export default function ScheduleGrid({ dates, rows, cellWidth = 88, rightColumnW
   const mainListRef = useRef<FlatList<any> | null>(null);
   const rightListRef = useRef<FlatList<any> | null>(null);
 
-  const getBackgroundColorForShift = (shiftValue: string | null) => {
-    if (!shiftValue) return 'transparent';
-    console.log(shiftValue);
+  // const getBackgroundColorForShift = (shiftValue: string | null) => {
+  //   if (!shiftValue) return 'transparent';
+  //   console.log(shiftValue);
 
 
-    const value = shiftValue.toLowerCase();
+  //   const value = shiftValue.toLowerCase();
 
-    const isHighAuth = Array.from(HIGH_AUTH_ROLES).some(role =>
-      value.includes(role.toLowerCase())
-    );
+  //   const isHighAuth = Array.from(HIGH_AUTH_ROLES).some(role =>
+  //     value.includes(role.toLowerCase())
+  //   );
 
-    const isStandard = Array.from(STANDARD_ROLES).some(role =>
-      value.includes(role.toLowerCase())
-    );
+  //   const isStandard = Array.from(STANDARD_ROLES).some(role =>
+  //     value.includes(role.toLowerCase())
+  //   );
 
-    if (isHighAuth) {
-      return '#cfe8ff'; // light blue (higher responsibility)
-    }
+  //   if (isHighAuth) {
+  //     return '#cfe8ff'; // light blue (higher responsibility)
+  //   }
 
-    if (isStandard) {
-      return '#dff7df'; // light green (standard staff)
-    }
+  //   if (isStandard) {
+  //     return '#dff7df'; // light green (standard staff)
+  //   }
 
-    return '#e6e6e6'; // fallback (unknown shift type)
-  };
+  //   return '#e6e6e6'; // fallback (unknown shift type)
+  // };
 
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isMarked, setMarked] = useState(false);

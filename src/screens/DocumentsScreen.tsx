@@ -46,10 +46,6 @@ export default function DocumentsScreen() {
                 <Document
                   url={d.url}
                   name={d.name}
-                  onPress={() => {
-                    setModalImage(d.url);
-                    setModalViewOpened(true);
-                  }}
                   menuOpened={menuOpenedFor === d.name}
                   setMenuOpened={(v) => setMenuOpenedFor(v ? d.name : null)}
                 />

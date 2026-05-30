@@ -1,7 +1,7 @@
 import { createReducer } from "@reduxjs/toolkit";
 import { DataState } from "../../types/State";
-import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, setTrainingUpdatingDate, loadProtocolsPreview, loadSecurityPosts, loadControllCenterPosts, loadDertPosts } from "../actions";
-import { SwapShiftRequest, GiveShiftRequest } from "../../types/Request";
+import { loadUsers, setUsersDataLoading, updateAvailability, uploadDocument, loadRequests, confirmShiftRequest, rejectShiftRequest, updateRequestStatus, removeRequest, updateUserShifts, setTrainingUpdatingDate, loadProtocolsPreview, loadSecurityPosts, loadControllCenterPosts, loadDertPosts, updateUserAvatar, deleteDocument, renameDocument, updateGiveRequests, updateSwapRequests } from "../actions";
+import { SwapShiftRequest, GiveShiftRequest, RequestStatus } from "../../types/Request";
 import { regenerateShiftId } from "../../utils/regenerateShiftId";
 import { Timestamp } from "firebase/firestore";
 import { normalizeDate } from "../../utils/getCurrentWeekDates";
@@ -160,6 +160,69 @@ export const DataReducer = createReducer(initialState, (builder) => {
       if (userToUpdate) {
         userToUpdate.shifts = action.payload.shifts;
       }
-    });
+    })
+    .addCase(updateUserAvatar, (state, action) => {
+      const userToUpdate = state.users.find(u => u.id === action.payload.userId);
+      if (userToUpdate) {
+        userToUpdate.avatarUrl = action.payload.url
+      }
+    })
+    .addCase(deleteDocument, (state, action) => {
+      const { userId, url } = action.payload;
+
+      const user = state.users.find(u => u.id === userId);
+      if (!user) return;
+
+      user.documents = user.documents?.filter(doc => doc.url !== url) || [];
+    })
+    .addCase(renameDocument, (state, action) => {
+      const { userId, url, newName } = action.payload;
+
+      const user = state.users.find(u => u.id === userId);
+      if (!user) return;
+
+      const doc = user.documents?.find(d => d.url === url);
+      if (!doc) return;
+
+      doc.name = newName;
+    })
+    .addCase(updateSwapRequests, (state, action) => {
+      const { firstUserId, secondUserId, firstShiftId, secondShiftId } = action.payload;
+
+      const now = new Date;
+
+      const newRequest: SwapShiftRequest = {
+        id: `${firstShiftId}_${secondShiftId}_${now}`,
+        type: "swap",                // ✅ REQUIRED
+        firstUserId,
+        secondUserId,
+        firstShiftId,
+        secondShiftId,
+        status: RequestStatus.PendingUser,
+        createdAt: now,
+        updatedAt: now,              // ✅ REQUIRED
+      };
+
+      state.swapRequests.unshift(newRequest);
+    })
+    .addCase(updateGiveRequests, (state, action) => {
+      const { firstUserId, secondUserId, shiftId } = action.payload;
+
+      const now = new Date;
+
+      const newRequest: GiveShiftRequest = {
+        id: `${shiftId}_${now}`,
+        type: "give",               // ✅ REQUIRED
+        firstUserId,
+        secondUserId,
+        shiftId,
+        status: RequestStatus.PendingUser,
+        createdAt: now,
+        updatedAt: now,             // ✅ REQUIRED
+      };
+
+      state.giveRequests.unshift(newRequest);
+    })
+    ;
 
 });

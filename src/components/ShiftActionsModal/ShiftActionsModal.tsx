@@ -1,25 +1,26 @@
+import { View, Text, Modal, TouchableWithoutFeedback, ScrollView, Pressable, StyleSheet, Animated, Easing } from 'react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Modal, TouchableWithoutFeedback, ScrollView, Pressable, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
 import { GuardTask } from '../../types/GuardTask';
 import { Colors, SCREEN_HEIGHT } from '../../constants';
 import CustomButton from '../CustomButton/CustomButton';
 import CancelButton from '../CancelButton/CancelButton';
 import { ModalView, useShiftRequestModal } from '../../hooks/useShiftRequestModal';
 import { useShiftRequestActions } from '../../hooks/useShiftRequestActions';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { State } from '../../types/State';
 import { getRoleByPost } from '../../utils/getRoleByPost';
 import useUser from '../../hooks/useUser';
 import { Shift } from '../../types/Shift';
 import { GlobalStyles } from '../../constants/GlobalStyles';
-import { Roles } from '../../constants/Roles';
 import { getRoleLabel } from '../../utils/getRoleLabel';
 import CloseButton from '../CloseButton/CloseButton';
 import { User } from '../../types/User';
 import { getAvailableUsersByPost } from '../../utils/getAvailablePostsByRole';
 import { parseShiftDate } from '../../utils/parseShiftDate';
 import { Post } from '../../types/Post';
-import { Posts } from '../../constants/Posts';
+import { ALL_POSTS } from '../../constants/Posts';
+import { normalizeDate } from '../../utils/getCurrentWeekDates';
+import { setError } from '../../store/actions';
 
 interface ShiftActionsModalProps {
   visible: boolean;
@@ -38,6 +39,7 @@ interface ShiftActionsModalProps {
 export default function ShiftActionsModal({visible, scheduleType,currentShift, isMyShift, remarkText, modalDate, modalTimes, remarkTitle, guardTasks, onClose}: ShiftActionsModalProps) {
   const users = useSelector((state: State) => state.data.users);
   const user = useUser();
+  const dispatch = useDispatch();
 
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
   const [secondUserId, setSecondUserId] = useState<string | null>(null);
@@ -52,6 +54,21 @@ export default function ShiftActionsModal({visible, scheduleType,currentShift, i
     openGive,
     openDetails,
   } = useShiftRequestModal();
+
+  const weekRange = useMemo(() => {
+    const baseDate = currentShift?.date
+      ? normalizeDate(currentShift.date)
+      : new Date();
+
+    const start = new Date(baseDate);
+    start.setDate(baseDate.getDate() - baseDate.getDay());
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+
+    return { start, end };
+  }, [currentShift?.date]);
 
   const handleOpenSwapShift = () => {
     openSwap();
@@ -71,17 +88,74 @@ export default function ShiftActionsModal({visible, scheduleType,currentShift, i
   const isSwapView = modalView === 'swap';
   const isGiveView = modalView === 'give';
 
+  const securityPosts = useSelector((state: any) => state.data.securityPosts);
+  const occPosts = useSelector((state: any) => state.data.controllCenterPosts);
+  const dertPosts = useSelector((state: any) => state.data.dertPosts);
+
+  const contextPosts: Post[] = useMemo(() => {
+    let selectedSlice: Post[] = [];
+
+    switch (scheduleType?.toLowerCase()) {
+      case 'security':
+        selectedSlice = securityPosts;
+        break;
+      case 'occ':
+      case 'controllcenter':
+        selectedSlice = occPosts;
+        break;
+      case 'dert':
+        selectedSlice = dertPosts;
+        break;
+      default:
+        selectedSlice = [];
+    }
+
+    if (!selectedSlice || selectedSlice.length === 0) {
+      return ALL_POSTS;
+    }
+
+    return selectedSlice;
+  }, [scheduleType, securityPosts, occPosts, dertPosts]);
+
   const { swapShift, giveShift } = useShiftRequestActions();
 
+  const canSwap = (userA: User, userB: User, shiftA: Shift, shiftB: Shift) => {
+    // same user ❌
+    if (userA.id === userB.id) return false;
+
+    // A must be able to work B's shift
+    const aCanTakeB =
+      getAvailableUsersByPost([userA], shiftB.post.id, contextPosts)?.length > 0;
+
+    // B must be able to work A's shift
+    const bCanTakeA =
+      getAvailableUsersByPost([userB], shiftA.post.id, contextPosts)?.length > 0;
+
+    return aCanTakeB && bCanTakeA;
+  };
+
   const handleSwap = () => {
+    const targetUser = users.find(u => u.id === secondUserId);
+    const currentUser = users.find(u => u.id === currentShift.userId);
+
+    if (!targetUser || !currentUser || !chosenShift) return;
+
+    const ok = canSwap(
+      currentUser,
+      targetUser,
+      currentShift,
+      chosenShift
+    );
+
+    if (!ok) {
+      dispatch(setError({ message: 'לא ניתן להחליף משמרות אלו' }));
+      return;
+    }
+
     swapShift({
       currentShift,
       chosenShift,
       secondUserId,
-      onSuccess: () => {
-        setSelectedShiftId(null);
-        onClose();
-      },
     });
   };
 
@@ -105,31 +179,33 @@ export default function ShiftActionsModal({visible, scheduleType,currentShift, i
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 7);
 
-  const canSwap = (userA: User, userB: User, shiftA: Shift, shiftB: Shift) => {
-    // same user ❌
-    if (userA.id === userB.id) return false;
+//   console.log("SHIFT CHECK SAMPLE:", users.flatMap(u =>
+//   (u.shifts || []).map(s => ({
+//     id: s.id,
+//     raw: s.date,
+//     normalized: normalizeDate(s.date),
+//   }))
+// ));
 
-    // A must be able to work B's shift
-    const aCanTakeB =
-      getAvailableUsersByPost([userA], shiftB.post.id, contextPosts)?.length > 0;
+const canSeeShift = (shift: Shift, user: User) => {
+  const role = getRoleByPost(shift.post.id, contextPosts);
+  if (!role) return false;
 
-    // B must be able to work A's shift
-    const bCanTakeA =
-      getAvailableUsersByPost([userB], shiftA.post.id, contextPosts)?.length > 0;
+  const userRoles = user.roles || [];
 
-    return aCanTakeB && bCanTakeA;
-  };
+  // user must have this role
+  return userRoles.includes(role);
+};
 
   const availableShifts = useMemo(() => {
-    const start = startOfWeek;
-    const end = endOfWeek;
+    const { start, end } = weekRange;
 
     return users.flatMap(user => {
       return (user.shifts || [])
         .filter(targetShift => {
           if (!targetShift?.date) return false;
 
-          const targetDate = parseShiftDate(targetShift.date);
+          const targetDate = normalizeDate(targetShift.date);
 
           const inWeek = targetDate >= start && targetDate < end;
 
@@ -152,58 +228,33 @@ export default function ShiftActionsModal({visible, scheduleType,currentShift, i
         }));
     })
     .sort((a, b) => {
-      const dateA = parseShiftDate(a.date);
-      const dateB = parseShiftDate(b.date);
+      const dateA = normalizeDate(a.date);
+      const dateB = normalizeDate(b.date);
 
       return dateA.getTime() - dateB.getTime();
     });
   }, [users, currentShift, startOfWeek, endOfWeek]);
 
   const groupedShifts = useMemo(() => {
-  if (!availableShifts) return {};
+    const grouped: Record<string, typeof availableShifts> = {};
 
-  return availableShifts.reduce((acc, item) => {
-    const date = parseShiftDate(item.date);
+    for (const s of availableShifts) {
+      const date = normalizeDate(s.date);
+      const key = date.toISOString().split("T")[0];
 
-    const dateStr = date.toLocaleDateString("he-IL");
-
-    if (!acc[dateStr]) acc[dateStr] = [];
-    acc[dateStr].push(item);
-
-    return acc;
-  }, {} as Record<string, typeof availableShifts>);
-}, [availableShifts]);
-
-const securityPosts = useSelector((state: any) => state.data.securityPosts);
-  const occPosts = useSelector((state: any) => state.data.controllCenterPosts);
-  const dertPosts = useSelector((state: any) => state.data.dertPosts);
-
-  const contextPosts: Post[] = useMemo(() => {
-    let selectedSlice: Post[] = [];
-
-    switch (scheduleType?.toLowerCase()) {
-      case 'security':
-        selectedSlice = securityPosts;
-        break;
-      case 'occ':
-      case 'controllcenter':
-        selectedSlice = occPosts;
-        break;
-      case 'dert':
-        selectedSlice = dertPosts;
-        break;
-      default:
-        selectedSlice = [];
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(s);
     }
 
-    // 🔥 CRITICAL FIX: If Redux hasn't loaded the slice, or if it's empty,
-    // fall back to the global Posts constant so lookups do not break.
-    if (!selectedSlice || selectedSlice.length === 0) {
-      return Posts;
-    }
+    // sort each group separately
+    Object.keys(grouped).forEach(key => {
+      grouped[key].sort((a, b) => {
+        return a.startTime.localeCompare(b.startTime);
+      });
+    });
 
-    return selectedSlice;
-  }, [scheduleType, securityPosts, occPosts, dertPosts]);
+    return grouped;
+  }, [availableShifts]);
 
   const relevantUsersToGive = useMemo(() => {
     if (!users || !currentShift) return [];
@@ -411,13 +462,16 @@ const securityPosts = useSelector((state: any) => state.data.securityPosts);
                   {
                     Object.entries(groupedShifts)?.length !== 0
                     ?
-                    <ScrollView style={[styles.modalShiftsList, {height: SCREEN_HEIGHT - 430}]}>
+                    <ScrollView
+                      style={[styles.modalShiftsList, {height: SCREEN_HEIGHT - 430}]}
+                      contentContainerStyle={{ padding: 8 }}
+                    >
                       {Object.entries(groupedShifts).map(([date, shifts]) => (
                         <View
                           key={date}
-                          style={{ marginBottom: 8 }}
+                          style={{ gap: 8 }}
                         >
-                          <Text style={{ fontSize: 16, fontWeight: 600, textAlign: 'center', marginBottom: 8 }}>
+                          <Text style={{ fontSize: 16, fontWeight: 600, textAlign: 'center', marginTop: 8 }}>
                             {date}
                           </Text>
 
@@ -529,12 +583,10 @@ const securityPosts = useSelector((state: any) => state.data.securityPosts);
 
 const styles = StyleSheet.create({
   modalShiftsList: {
-    borderWidth: 1,
-    padding: 8,
+    borderWidth: 0.4,
     marginBottom: 16,
     borderRadius: 24,
     overflow: 'hidden',
     boxShadow: 'inset 0px -4px 10px 0px rgba(0,0,0,0.4)',
-
   },
 });

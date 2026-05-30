@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUsers } from "../store/api/fetchUsers.api";
@@ -8,6 +9,7 @@ export default function useRefresh() {
   const dispatch = useDispatch();
 
   const onRefresh = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await fetchUsers(dispatch);
     await fetchProtocolsPreview(dispatch);
     await fetchSwapRequests(dispatch);

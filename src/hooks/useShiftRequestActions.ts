@@ -4,7 +4,7 @@ import { Shift } from '../types/Shift';
 import { sendGiveRequest, sendSwapRequest } from '../store/api/createRequest.api';
 import { fetchGiveRequests, fetchSwapRequests } from '../store/api/fetchRequests.api';
 import useUser from './useUser';
-import { setError, setSuccess } from '../store/actions';
+import { setError, setSuccess, updateGiveRequests, updateSwapRequests } from '../store/actions';
 import { ErrorMessages, SuccessMessages } from '../constants/Messages';
 import { normalizeDate } from '../utils/getCurrentWeekDates';
 
@@ -59,7 +59,13 @@ export const useShiftRequestActions = () => {
       if (result.success) {
         dispatch(setSuccess({message: SuccessMessages.SHIFT_SWAP_REQUEST_SENT}));
 
-        fetchSwapRequests(dispatch);
+        dispatch(updateSwapRequests({
+          firstUserId: user.id,
+          secondUserId: secondUserId,
+          firstShiftId: currentShift.id,
+          secondShiftId: chosenShift.id
+        }))
+
         onSuccess?.();
       } else {
         throw new Error('Swap failed');
@@ -102,7 +108,13 @@ export const useShiftRequestActions = () => {
 
       if (result.success) {
         dispatch(setSuccess({message: SuccessMessages.SHIFT_GIVE_REQUEST_SENT}))
-        fetchGiveRequests(dispatch);
+
+        dispatch(updateGiveRequests({
+          firstUserId: user.id,
+          secondUserId: secondUserId,
+          shiftId: currentShift.id
+        }))
+
         onSuccess?.();
       } else {
         throw new Error('Give shift failed');

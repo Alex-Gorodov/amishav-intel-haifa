@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
 import { View, FlatList, ActivityIndicator, RefreshControl, StyleSheet } from 'react-native';
 import AvailabilityButton from '../components/AvailabilityButton/AvailabilityButton';
-import { getWeekDates } from '../utils/dateUtils';
 import CustomButton from '../components/CustomButton/CustomButton';
-import { Timestamp, doc, setDoc } from "firebase/firestore";
-import useUser from '../hooks/useUser';
-import { db } from '../services/firebaseConfig';
-import { fetchUsers } from '../store/api/fetchUsers.api';
-import { useDispatch } from 'react-redux';
-import { Ionicons } from '@expo/vector-icons';
-import { updateAvailability } from '../store/actions';
-import useRefresh from '../hooks/useRefresh';
-import { Colors } from '../constants';
 import { normalizeDate } from '../utils/getCurrentWeekDates';
+import { Timestamp, doc, setDoc } from "firebase/firestore";
+import { updateAvailability } from '../store/actions';
+import React, { useEffect, useState } from 'react';
+import { getWeekDates } from '../utils/dateUtils';
+import { db } from '../services/firebaseConfig';
+import { Ionicons } from '@expo/vector-icons';
+import useRefresh from '../hooks/useRefresh';
+import { useDispatch } from 'react-redux';
+import useUser from '../hooks/useUser';
+import { Colors } from '../constants';
 
 export default function AvailabilityScreen() {
   const user = useUser();
@@ -43,7 +42,6 @@ export default function AvailabilityScreen() {
 
     const newReq = newW.map((day) => {
       const ex = user?.availability?.find(
-        // ✅ FIX 1: Wrap r.date in normalizeDate to handle string or legacy objects safely
         (r) => normalizeDate(r.date).toDateString() === day.date.toDateString()
       );
       return ex?.statuses ?? [true, true, true];
@@ -53,7 +51,6 @@ export default function AvailabilityScreen() {
 
     const newComments = newW.map((day) => {
       const ex = user?.availability?.find(
-        // ✅ FIX 2: Use normalizeDate here as well
         (r) => normalizeDate(r.date).toDateString() === day.date.toDateString()
       );
       return ex?.comment ?? '';
@@ -85,13 +82,11 @@ export default function AvailabilityScreen() {
 
     const todayDate = new Date();
     const filteredOld = oldAvailability.filter((req) => {
-      // ✅ FIX 3: normalizeDate handles comparison safely regardless of origin state
       return normalizeDate(req.date) >= todayDate;
     });
 
     const currentWeekDates = week.map((d) => d.date.toDateString());
     const withoutCurrentWeek = filteredOld.filter((req) => {
-      // ✅ FIX 4: Secure check against structural exceptions
       return !currentWeekDates.includes(normalizeDate(req.date).toDateString());
     });
 
@@ -105,7 +100,6 @@ export default function AvailabilityScreen() {
       { merge: true }
     );
     setSentSuccess(true);
-    fetchUsers(dispatch);
     setTimeout(() => setSentSuccess(false), 3000);
     setIsSending(false);
   };

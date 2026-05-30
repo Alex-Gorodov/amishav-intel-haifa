@@ -1,25 +1,23 @@
-import * as Haptics from 'expo-haptics';
-import React, { useState } from 'react';
-import { View, Image, Text, StyleSheet, Pressable, TextInput, Modal, Linking, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, Pressable, TextInput, Modal, Linking } from 'react-native';
 import { doc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
-import useUser from '../../hooks/useUser';
-import { db } from '../../services/firebaseConfig';
-import { fetchUsers } from '../../store/api/fetchUsers.api';
-import { useDispatch } from 'react-redux';
-import { Colors } from '../../constants';
+import { deleteDocument, renameDocument } from '../../store/actions';
+import { useFileUpload } from '../../hooks/useFileUpload';
 import CustomButton from '../CustomButton/CustomButton';
 import CancelButton from '../CancelButton/CancelButton';
-import { useFileUpload } from '../../hooks/useFileUpload';
+import { db } from '../../services/firebaseConfig';
+import useUser from '../../hooks/useUser';
+import { useDispatch } from 'react-redux';
+import { Colors } from '../../constants';
+import React, { useState } from 'react';
 
 interface Props {
   url: string;
   name: string;
-  onPress: () => void;
   menuOpened: boolean;
   setMenuOpened: (v: boolean) => void;
 }
 
-export default function Document({ url, name, onPress, menuOpened, setMenuOpened }: Props) {
+export default function Document({ url, name, menuOpened, setMenuOpened }: Props) {
   const [editing, setEditing] = useState(false);
   const [newName, setNewName] = useState(name);
   const user = useUser();
@@ -27,24 +25,25 @@ export default function Document({ url, name, onPress, menuOpened, setMenuOpened
   const userRef = doc(db, 'users', user?.id!);
 
   const handleRename = async () => {
-    if (!newName.trim()) return;
+    if (!newName.trim() || !user) return;
     const docToUpdate = { url, name };
     const updatedDoc = { url, name: newName.trim() };
     await updateDoc(userRef, { documents: arrayRemove(docToUpdate) });
     await updateDoc(userRef, { documents: arrayUnion(updatedDoc) });
-    await fetchUsers(dispatch);
+    dispatch(renameDocument({userId: user.id, url, newName: newName}))
     setEditing(false);
     setMenuOpened(false);
   };
 
-  const handleDelete = async () => {
+  const handleDeleteDocument = async () => {
+    if (!user) return;
     const docToRemove = { url, name };
     await updateDoc(userRef, { documents: arrayRemove(docToRemove) });
-    await fetchUsers(dispatch);
+    dispatch(deleteDocument({userId: user.id, url}))
     setMenuOpened(false);
   };
 
-  const { handlePickFileOrImage, uploading } = useFileUpload(async ({url, name}) => {
+  const { handlePickFileOrImage } = useFileUpload(async ({url, name}) => {
     if (!user) return;
     const userRef = doc(db, 'users', user.id);
     await updateDoc(userRef, { documents: arrayUnion({ url, name }) });
@@ -52,7 +51,7 @@ export default function Document({ url, name, onPress, menuOpened, setMenuOpened
 
   const handleUpdateDocument = async () => {
     handlePickFileOrImage();
-    await handleDelete();
+    await handleDeleteDocument();
   }
 
 
@@ -82,7 +81,7 @@ export default function Document({ url, name, onPress, menuOpened, setMenuOpened
                   setMenuOpened(false);
                   Linking.openURL(url);
                 }} title="לפתוח בדפדפן"/>
-                <CustomButton onHandle={handleDelete} style={[{ backgroundColor: Colors.errorText }]} title="למחוק" titleStyle={{color: Colors.errorText}}/>
+                <CustomButton onHandle={handleDeleteDocument} style={[{ backgroundColor: Colors.errorText }]} title="למחוק" titleStyle={{color: Colors.errorText}}/>
                 <CancelButton onHandle={() => setMenuOpened(false)}/>
               </>
             )}

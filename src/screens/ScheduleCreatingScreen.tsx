@@ -1,29 +1,17 @@
-import {
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Modal,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { State } from '../types/State';
-import useRefresh from '../hooks/useRefresh';
-import { Colors, SCREEN_WIDTH } from '../constants';
-import { Roles } from '../constants/Roles';
-import { Ionicons } from '@expo/vector-icons';
-import { getWeekDates, toISODate } from '../utils/dateUtils';
-import { generateSchedule } from '../utils/scheduleGenerator';
+import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, View, TouchableOpacity, Modal, ActivityIndicator, Alert } from 'react-native';
 import { saveMultipleUsersShifts } from '../store/api/saveShifts.api';
-import { updateUserShifts } from '../store/actions';
-import { fetchUsers } from '../store/api/fetchUsers.api';
 import CustomButton from '../components/CustomButton/CustomButton';
+import { generateSchedule } from '../utils/scheduleGenerator';
 import { normalizeDate } from '../utils/getCurrentWeekDates';
+import { getWeekDates, toISODate } from '../utils/dateUtils';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateUserShifts } from '../store/actions';
+import { Colors, SCREEN_WIDTH } from '../constants';
+import { Ionicons } from '@expo/vector-icons';
+import useRefresh from '../hooks/useRefresh';
+import { Roles } from '../constants/Roles';
+import React, { useState } from 'react';
+import { State } from '../types/State';
 
 export default function ScheduleCreatingScreen() {
   const users = useSelector((state: State) => state.data.users);
@@ -33,14 +21,13 @@ export default function ScheduleCreatingScreen() {
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  // next week dates and responsive column width
   const ref = new Date();
   ref.setDate(ref.getDate() + 7);
   const week = getWeekDates(ref, 0, 'he-IL');
   const weekDates = week.map(w => w.date);
 
-  const labelWidth = 64; // width reserved for labels column
-  const horizontalPadding = 32; // approximate paddings/margins
+  const labelWidth = 64;
+  const horizontalPadding = 32;
   const columnWidth = Math.max(40, Math.floor((SCREEN_WIDTH - labelWidth - horizontalPadding) / 7));
 
   const handleGenerateSchedule = async () => {
@@ -48,38 +35,20 @@ export default function ScheduleCreatingScreen() {
     setErrorMessages([]);
 
     try {
-      // Генерируем расписание
-      console.log('=== התחלת יצירת הסידור ===');
-      console.log('מספר המשתמשים:', users.length);
-      console.log('השבוע הנבחר:', weekDates[0].toLocaleDateString('he-IL'), '-', weekDates[6].toLocaleDateString('he-IL'));
-
-      // Для теста: детерминированный прогон, игнорируем существующие смены пользователя (forceFresh=true)
-      // В production можно убрать forceFresh или сделать переключатель в UI
       const result = generateSchedule(users, weekDates[0], weekDates, { debug: true, forceFresh: true, debugUser: 'אלכסנדר גורודוב' });
 
-      // console.log('=== תוצאת יצירת הסידור ===');
-      console.log('הצלחה:', result.success);
-      // console.log('שגיאות:', result.errors);
-      // console.log('אזהרות:', result.warnings);
-
-      // Подсчитываем количество назначенных смен
       let totalShifts = 0;
       const shiftsByUser: Record<string, number> = {};
       for (const [userId, shifts] of result.shifts.entries()) {
         totalShifts += shifts.length;
         shiftsByUser[userId] = shifts.length;
       }
-      // console.log('סה"כ משמרות שהוקצו:', totalShifts);
-      // console.log('משמרות לפי משתמש:', shiftsByUser);
-
-      // Объединяем новые смены с существующими для каждого пользователя
       const allShiftsByUserId = new Map<string, any[]>();
 
       for (const user of users) {
         const existingShifts = user.shifts || [];
         const newShifts = result.shifts.get(user.id) || [];
 
-        // Фильтруем существующие смены, которые не относятся к целевой неделе
         const targetWeekStart = weekDates[0];
         const targetWeekEnd = new Date(targetWeekStart);
         targetWeekEnd.setDate(targetWeekStart.getDate() + 7);
@@ -89,77 +58,44 @@ export default function ScheduleCreatingScreen() {
           return shiftDate < targetWeekStart || shiftDate >= targetWeekEnd;
         });
 
-        // Объединяем: старые (вне целевой недели) + новые
         allShiftsByUserId.set(user.id, [...shiftsOutsideTargetWeek, ...newShifts]);
       }
-
-      // Сохраняем в Firebase даже если есть ошибки
-      // console.log('=== שמירה ל-Firebase ===');
-      // console.log('מספר משתמשים לעדכון:', allShiftsByUserId.size);
 
       const saveResult = await saveMultipleUsersShifts(allShiftsByUserId);
 
       if (!saveResult.success) {
         const errorMsg = `שגיאת שמירה: ${saveResult.error}`;
         const messages = [errorMsg, ...result.errors];
-        // console.error('=== שגיאת שמירה ===');
-        // console.error('הודעה:', errorMsg);
-        // console.error('כל השגיאות:', messages);
         setErrorMessages(messages);
         setErrorModalVisible(true);
         setIsGenerating(false);
         return;
       }
-
-      // console.log('השמירה הושלמה בהצלחה');
-
-      // Обновляем Redux
       for (const [userId, shifts] of allShiftsByUserId.entries()) {
         dispatch(updateUserShifts({ userId, shifts }));
       }
 
-      // Обновляем данные с сервера
-      await fetchUsers(dispatch);
-
-      // Формируем сообщение о результате
       const allMessages = [...result.errors, ...result.warnings];
 
-      // console.log('=== התוצאה הסופית ===');
-      // console.log('שגיאות:', result.errors.length);
-      // console.log('אזהרות:', result.warnings.length);
-      // console.log('משמרות שהוקצו:', totalShifts);
-
       if (result.errors.length > 0 || result.warnings.length > 0) {
-        // Есть ошибки или предупреждения - показываем их
         const messages = [
           `הסידור נוצר חלקית.`,
           `משמרות שהוקצו: ${totalShifts}`,
           '',
           ...allMessages
         ];
-        // console.log('=== הודעה למשתמש (עם שגיאות/אזהרות) ===');
-        // console.log(messages.join('\n'));
         setErrorMessages(messages);
         setErrorModalVisible(true);
       } else if (totalShifts > 0) {
-        // Все успешно
         const successMsg = `הסידור נוצר בהצלחה!\nמשמרות שהוקצו: ${totalShifts}`;
-        // console.log('=== הודעה על הצלחה ===');
-        // console.log(successMsg);
         Alert.alert('הצלחה', successMsg);
       } else {
-        // Ничего не назначено
         const noShiftsMsg = 'לא ניתן להקצות אף משמרת. בדוק/י את זמינות העובדים.';
-        // console.warn('=== אזהרה: אין משמרות ===');
-        // console.warn(noShiftsMsg);
         setErrorMessages([noShiftsMsg]);
         setErrorModalVisible(true);
       }
     } catch (error: any) {
       const errorMsg = `שגיאה: ${error.message || 'שגיאה לא ידועה'}`;
-      // console.error('=== שגיאה בתהליך יצירת הסידור ===');
-      // console.error(errorMsg);
-      // console.error('שגיאה מלאה:', error);
       setErrorMessages([errorMsg]);
       setErrorModalVisible(true);
     } finally {

@@ -1,23 +1,22 @@
-import { useShabbatByWeek } from '../../hooks/useShabbatByWeek';
-import { getMonthlySalary, getShiftSalary } from '../../utils/getShiftSalary';
-import { getMonthlyHours } from '../../utils/getMonthlyHours';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Colors, CURRENT_DATE } from '../../constants';
-import useUser from '../../hooks/useUser';
-import Card from '../Card/Card';
-import { useMemo } from 'react';
-import FlipCard from '../FlipCard/FlipCard';
-import SalaryCard from '../SalaryCard/SalaryCard';
-import { getHoursString } from '../../utils/getHoursString';
-import { useImageUpload } from '../../hooks/useImageUpload';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../services/firebaseConfig';
-import { fetchUsers } from '../../store/api/fetchUsers.api';
-import { useDispatch } from 'react-redux';
-import { setError, setSuccess } from '../../store/actions';
+import { setError, setSuccess, updateUserAvatar } from '../../store/actions';
 import { ErrorMessages, SuccessMessages } from '../../constants/Messages';
 import { getShabbatHoursString } from '../../utils/getShabbatHours';
 import { normalizeDate } from '../../utils/getCurrentWeekDates';
+import { useShabbatByWeek } from '../../hooks/useShabbatByWeek';
+import { getMonthlyHours } from '../../utils/getMonthlyHours';
+import { getMonthlySalary } from '../../utils/getShiftSalary';
+import { getHoursString } from '../../utils/getHoursString';
+import { useImageUpload } from '../../hooks/useImageUpload';
+import { Colors, CURRENT_DATE } from '../../constants';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../services/firebaseConfig';
+import SalaryCard from '../SalaryCard/SalaryCard';
+import FlipCard from '../FlipCard/FlipCard';
+import { useDispatch } from 'react-redux';
+import useUser from '../../hooks/useUser';
+import Card from '../Card/Card';
+import { useMemo } from 'react';
 
 export default function UserOverview() {
   const user = useUser();
@@ -44,7 +43,7 @@ export default function UserOverview() {
     try {
       const userRef = doc(db, 'users', user.id);
       await updateDoc(userRef, { avatarUrl: url });
-      await fetchUsers(dispatch);
+      dispatch(updateUserAvatar({userId: userRef.id, url: url}))
       dispatch(setSuccess({message: SuccessMessages.PROFILE_IMAGE_UPDATED}))
     } catch (e) {
       dispatch(setError({message: ErrorMessages.TRY_AGAIN}))

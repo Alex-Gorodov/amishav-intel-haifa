@@ -1,14 +1,13 @@
-import { useState } from "react";
-import { View, ActivityIndicator } from "react-native";
-import { beforeAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../services/firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import SignInForm from "../components/SignInForm/SignInForm";
-import { fetchUsers } from "../store/api/fetchUsers.api";
-import { useDispatch } from "react-redux";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { View, ActivityIndicator } from "react-native";
 import { ErrorMessages } from "../constants/Messages";
+import { auth, db } from "../services/firebaseConfig";
 import { setError } from "../store/actions";
+import { useDispatch } from "react-redux";
 import { Colors } from "../constants";
+import { useState } from "react";
 
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +39,6 @@ export default function LoginScreen() {
         emailToLogin = user.email;
       }
 
-      // Firebase Email Auth
       await signInWithEmailAndPassword(auth, emailToLogin, password);
     } catch (e) {
       dispatch(setError({message: ErrorMessages.CONNECTION_ERROR}))

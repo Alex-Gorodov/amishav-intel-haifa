@@ -34,7 +34,6 @@ export default function useUser() {
             uid: firebaseUser.uid,
           });
         } else {
-          console.log("No such user document!");
           setUser(null);
         }
       } catch (error) {

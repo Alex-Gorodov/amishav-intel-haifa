@@ -1,20 +1,17 @@
 import { Modal, View, Text, Pressable, StyleSheet, ScrollView, TextInput, ActivityIndicator } from "react-native";
+import { getAssignablePostsForUser } from "../../utils/getAssignablePostsForUser";
+import { setError, setSuccess, updateUserShifts } from "../../store/actions";
 import { ErrorMessages, SuccessMessages } from "../../constants/Messages";
 import { Timestamp, arrayUnion, doc, setDoc } from "firebase/firestore";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { fetchUsers } from "../../store/api/fetchUsers.api";
-import { setError, setSuccess } from "../../store/actions";
 import CustomButton from "../CustomButton/CustomButton";
 import CancelButton from "../CancelButton/CancelButton";
 import { db } from "../../services/firebaseConfig";
 import TimePicker from "../TimePicker/TimePicker";
-import { useDispatch, useSelector } from "react-redux";
-import { Colors } from "../../constants";
 import React, { useMemo, useState } from "react";
-import { getAvailablePostsByRole } from "../../utils/getAvailablePostsByRole";
+import { useDispatch } from "react-redux";
+import { Colors } from "../../constants";
 import useUser from "../../hooks/useUser";
-import { RootState } from "../../store/root-reducer";
-import { getAssignablePostsForUser } from "../../utils/getAssignablePostsForUser";
 
 interface Props {
   isOpened: boolean;
@@ -99,6 +96,8 @@ export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
   };
 
   const handleSave = async () => {
+    if (!user) return;
+
     if (!selectedPost) {
       dispatch(setError({message: (ErrorMessages.POST_NOT_SELECTED)}));
       return;
@@ -141,7 +140,7 @@ export default function AddShiftModal({ isOpened, onClose, userId }: Props) {
 
       resetForm();
 
-      await fetchUsers(dispatch);
+      dispatch(updateUserShifts({userId: userId, shifts: [...user.shifts, newShift]}))
       dispatch(setSuccess({ message: SuccessMessages.SHIFT_ADDED}));
       onClose();
     } catch (err) {

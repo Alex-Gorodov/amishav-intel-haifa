@@ -18,7 +18,6 @@ export default function ProtocolGroup({image, title, protocols}: ProtocolGroupPr
   const [loading, setLoading] = useState(false);
 
   const cacheRef = useRef<Record<string, Protocol>>({});
-  const refresh = useRefresh();
 
   const openProtocol = async (id: string) => {
     if (cacheRef.current[id]) {

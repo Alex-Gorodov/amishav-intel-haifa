@@ -15,6 +15,8 @@ export const loadProtocolsPreview = createAction<{protocolsPreview: ProtocolPrev
 
 export const setRequestsDataLoading = createAction<{isRequestsDataLoading: boolean}>('data/setRequestsDataLoading');
 export const loadRequests = createAction<{type: 'swap' | 'give', requests: SwapShiftRequest[] | GiveShiftRequest[]}>('data/loadRequests');
+export const updateSwapRequests = createAction<{firstUserId: string, secondUserId: string, firstShiftId: string, secondShiftId: string}>('data/updateSwapRequests');
+export const updateGiveRequests = createAction<{firstUserId: string, secondUserId: string, shiftId: string}>('data/updateGiveRequests');
 
 export const setSecurityPostsDataLoading = createAction<{isPostsDataLoading: boolean}>('data/setPostsDataLoading');
 export const loadSecurityPosts = createAction<{posts: Post[]}>('data/loadPosts');
@@ -46,5 +48,9 @@ export const setError = createAction<{message: string | null}>('app/setError')
 export const setSuccess = createAction<{message: string | null}>('app/setSuccess')
 
 export const updateUserShifts = createAction<{userId: string, shifts: Shift[]}>('data/updateUserShifts');
+export const updateUserAvatar = createAction<{userId: string, url: string}>('data/updateUserAvatar');
+
+export const deleteDocument = createAction<{userId: string, url: string}>('data/deleteDocument');
+export const renameDocument = createAction<{userId: string, url: string, newName: string}>('data/renameDocument');
 
 export const setTrainingUpdatingDate = createAction<{userId: string, training: Training, date: Date}>('data/updateTrainingupdatingDate')

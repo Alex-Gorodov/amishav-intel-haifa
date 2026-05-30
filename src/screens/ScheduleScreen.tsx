@@ -1,13 +1,11 @@
 import { RefreshControl, ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native'
-import React, { useCallback, useMemo, useState } from 'react'
-import { SimpleToggle } from '../components/CustomToggle/CustomToggle'
 import ScheduleListGeneral from '../components/ScheduleList/ScheduleListGeneral'
 import ScheduleListPrivate from '../components/ScheduleList/ScheduleListPrivate'
-import { useDispatch } from 'react-redux'
-import { fetchUsers } from '../store/api/fetchUsers.api'
-import * as Haptics from 'expo-haptics';
-import { Ionicons } from '@expo/vector-icons';
+import { SimpleToggle } from '../components/CustomToggle/CustomToggle'
 import { Colors, SCREEN_HEIGHT } from '../constants'
+import React, { useMemo, useState } from 'react'
+import { Ionicons } from '@expo/vector-icons';
+import useRefresh from '../hooks/useRefresh'
 
 function getWeekByOffset(offset = 0): Date[] {
   const today = new Date();
@@ -29,10 +27,6 @@ function getWeekByOffset(offset = 0): Date[] {
   return week;
 }
 
-function dateKey(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
 function formatDate(dt: Date) {
   const dd = dt.getDate().toString().padStart(2, "0");
   const mm = (dt.getMonth() + 1).toString().padStart(2, "0");
@@ -43,15 +37,9 @@ export default function ScheduleScreen() {
   const [isActive, setIsActive] = useState(true);
   const [weekOffset, setWeekOffset] = useState(0);
 
-  const dispatch = useDispatch();
-
-  const onRefresh = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    fetchUsers(dispatch);
-  }, [dispatch]);
+  const refresh = useRefresh();
 
   const weekDates = useMemo(() => getWeekByOffset(weekOffset), [weekOffset]);
-  const dateKeys = useMemo(() => weekDates.map(dateKey), [weekDates]);
 
   function getWeekLabel() {
     if (weekOffset === -1) return "שבוע שעבר";
@@ -98,7 +86,7 @@ export default function ScheduleScreen() {
       {!isActive ? (
         <ScrollView
           style={{ height: SCREEN_HEIGHT - 220}}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
+          refreshControl={<RefreshControl refreshing={false} onRefresh={refresh.onRefresh} />}
         >
           <ScheduleListPrivate weekDates={weekDates} />
         </ScrollView>
