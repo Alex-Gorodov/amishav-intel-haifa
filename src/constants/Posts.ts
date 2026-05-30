@@ -1,7 +1,6 @@
 import { Post } from "../types/Post";
 import { Tariffs } from "./Tariffs";
 
-
 export const SECURITY_POSTS: Post[] = [
   { id: "gatehouse-morning", title: "גייטהאוס בוקר", defaultStartTime: "06:30", defaultEndTime: "15:00", hourlyRate: Tariffs.securityGuard, role: 'security_guard'},
   { id: "gatehouse-afternoon", title: "גייטהאוס צהריים", defaultStartTime: "14:45", defaultEndTime: "22:00" , hourlyRate: Tariffs.securityGuard, role: 'security_guard'},
@@ -59,6 +58,12 @@ export const ALL_POSTS: Post[] = [
   ...SECURITY_POSTS,
   ...OCC_POSTS,
   ...DERT_POSTS,
+];
+
+export const ALL_SHIFTS_LIST: Post[] = [
+  ...SECURITY_POSTS,
+  ...OCC_POSTS.filter((p) => p.id.includes('shift-manager')),
+  ...DERT_POSTS.filter((p) => p.id.includes('shift-manager')),
 ];
 
 export const SECURITY_ROLES = [

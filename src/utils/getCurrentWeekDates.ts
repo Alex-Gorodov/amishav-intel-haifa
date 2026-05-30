@@ -5,8 +5,8 @@ export function normalizeDate(date: any): Date {
     return date;
   }
 
-  if (typeof date.toDate === 'function') {
-    return normalizeDate(date);
+  if (typeof date?.toDate === 'function') {
+    return date.toDate();
   }
 
   return new Date(date);
