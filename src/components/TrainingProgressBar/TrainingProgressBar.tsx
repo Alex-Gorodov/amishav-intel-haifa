@@ -8,8 +8,8 @@ import { useDispatch } from 'react-redux';
 import useUser from '../../hooks/useUser';
 import { updateTrainingDate } from '../../store/api/updateTrainingDate.api';
 import { User } from '../../types/User';
-import { normalizeDate } from '../../utils/dateUtils';
 import { setTrainingUpdatingDate } from '../../store/actions';
+import { normalizeDate } from '../../utils/getCurrentWeekDates';
 
 interface TrainingProgressBarProps {
   training: Training;
@@ -18,7 +18,7 @@ interface TrainingProgressBarProps {
 
 export default function TrainingProgressBar({ training, trainingKey }: TrainingProgressBarProps) {
   const user = useUser();
-  const currentDate = Date.now();
+
   const updatingDate = training.updatingDate
   ? normalizeDate(training.updatingDate)
   : null;
