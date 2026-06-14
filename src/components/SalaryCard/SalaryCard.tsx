@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   eye: {
     position: 'absolute',
     top: 6,
-    right: 12
+    right: 40
   },
   warning: {
     textAlign: 'center',

@@ -6,6 +6,7 @@ import {
   Animated,
   StyleProp,
   ViewStyle,
+  Text
 } from 'react-native';
 import { Colors } from '../../constants';
 
@@ -37,6 +38,10 @@ export default function FlipCard({
 
   return (
     <Pressable onPress={toggle} style={[styles.container, style, { height }]}>
+      <View style={{flex: 1, gap: 6, position: 'absolute', top: height / 2 - 8, right: 8}}>
+        <View style={{ width: 5,height: 5,backgroundColor: flipped ? 'gray' : 'black', borderRadius: 12}}></View>
+        <View style={{ width: 5,height: 5,backgroundColor: flipped ? 'black' : 'gray', borderRadius: 12}}></View>
+      </View>
       <Animated.View
         style={[
           styles.inner,

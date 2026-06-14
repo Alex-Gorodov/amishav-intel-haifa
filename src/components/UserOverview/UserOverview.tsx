@@ -31,7 +31,6 @@ export default function UserOverview() {
 
   const salary = getMonthlySalary(shifts, shabbatByWeek);
 
-
   const userName = user ? user.firstName + ' ' + user.secondName : 'אין חיבור';
 
   const totalHours = getHoursString(Number(hours));
