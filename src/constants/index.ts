@@ -24,7 +24,7 @@ export const Colors = {
   white: '#fff',
   unfocusedTabBarButton: '#999',
   primary: '#5492CA',
-  primaryLight: '#73b5eeff',
+  primaryLight: 'rgb(108, 186, 255)',
   mainDark: '#333',
   mainLight: '#ddd',
   accent: '#1295aaff',

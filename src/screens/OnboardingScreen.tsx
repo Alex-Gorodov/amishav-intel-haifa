@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function OnboardingScreen() {
   const onboardingRef = useRef<Onboarding>(null);
   const image = () => (
-    <Image source={require('../../assets/images/amishav-icon.png')} width={150} height={96} style={{width: 150, height: 96}} />
+    <Image source={require('../../assets/images/intel.png')} width={150} height={58} style={{width: 150, height: 58}} />
   )
 
   const navigation = useNavigation();
@@ -47,19 +47,19 @@ export default function OnboardingScreen() {
       ref={onboardingRef}
       pages={[
         {
-          backgroundColor: Colors.primaryLight,
+          backgroundColor: Colors.white,
           image: image(),
           title: 'לעבוד',
           subtitle: 'תשלטו על המשמרות שלכם, תהיו גמישים ללא חפירות והתחייבויות',
         },
         {
-          backgroundColor: Colors.primaryLight,
+          backgroundColor: Colors.white,
           image: image(),
           title: 'להרוויח',
           subtitle: 'תראה כמה עשית ממש כאן, תוך כדי המשמרת!',
         },
         {
-          backgroundColor: Colors.primaryLight,
+          backgroundColor: Colors.white,
           image: image(),
           title: 'להתקדם',
           subtitle: "תנצלו את הזמן ואת הפוטנציאל שלכם!",
