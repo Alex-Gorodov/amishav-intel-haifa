@@ -145,8 +145,11 @@ export const useFileUpload = (
       );
     });
 
+
     if (file) {
-      await uploadToCloudinary(file.uri, file.type, file.name);
+      const finalName = file.name.replace(/\.[^/.]+$/, '');
+
+      await uploadToCloudinary(file.uri, file.type, finalName);
     }
   }, [uploadToCloudinary]);
 
