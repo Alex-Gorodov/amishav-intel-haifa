@@ -28,12 +28,12 @@ export default function ProfileScreen() {
         <CustomButton title="מסמכים ותעודות" onHandle={() => navigation.navigate('Documents' as never)} />
         <CustomButton title="הדרכות ורענונים" onHandle={() => navigation.navigate('Trainings' as never)} />
         <CustomButton title="החלפות" onHandle={() => navigation.navigate('UserSwapAndGive' as never)} />
-        <CustomButton title="הוסף משמרת" onHandle={() => setIsAddShiftModalOpened(true)}/>
 
         {
           user && user.isAdmin &&
-            <>
+          <>
               <Text style={{textAlign: 'center', fontSize: 20, fontWeight: 600}}>אזור ראש הצוות</Text>
+              <CustomButton title="הוסף משמרת" onHandle={() => setIsAddShiftModalOpened(true)}/>
               <CustomButton title="הוספת עובד חדש" onHandle={() => setIsNewEmployeeModalOpen(true)}/>
               <CustomButton title="בניית סידור" onHandle={() => navigation.navigate('ScheduleCreating' as never)}/>
               <CustomButton title="החלפות/מסירות" onHandle={() => navigation.navigate('AdminSwapsAndGives' as never)}/>

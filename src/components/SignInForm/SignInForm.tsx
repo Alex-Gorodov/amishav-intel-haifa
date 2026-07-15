@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useRef, useState } from "react";
-import { View, TextInput, Button, StyleSheet, Text, Pressable, TouchableOpacity, Alert, Keyboard } from "react-native";
+import { View, TextInput, Button, StyleSheet, Text, Pressable, TouchableOpacity, Alert, Keyboard, Image } from "react-native";
 import CustomButton from "../CustomButton/CustomButton";
 import { Colors } from "../../constants";
 import { handleResetPassword } from "../../services/firebaseResetPassword";
@@ -41,6 +41,7 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
 
   return (
     <View style={styles.container}>
+      <Image source={require('../../../assets/images/intel.png')} width={150} height={58} style={{ height: 58, width: 150, alignSelf: 'center', marginBottom: 40}} />
       <Text style={styles.label}>תעודת זהות / אימייל</Text>
       <TextInput
         onFocus={() => setIdFocused(true)}
@@ -55,7 +56,7 @@ export default function SignInForm({ onSubmit }: SignInFormProps) {
         onChangeText={setPassportId}
       />
 
-      <Text style={styles.label}>סיסמה (6 ספרות)</Text>
+      <Text style={styles.label}>סיסמה (מספר עובד)</Text>
       <TextInput
         ref={passwordRef}
         onFocus={() => setPasswordFocused(true)}
