@@ -1,4 +1,4 @@
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native'
+import { RefreshControl, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import React from 'react'
 import PressableCard from '../components/PressableCard/PressableCard'
 import { useNavigation } from '@react-navigation/native'

@@ -36,6 +36,8 @@ export default function Document({ url, name, menuOpened, setMenuOpened }: Props
   };
 
   const handleDeleteDocument = async () => {
+    console.log("DELETE CALLED")
+
     if (!user) return;
     const docToRemove = { url, name };
     await updateDoc(userRef, { documents: arrayRemove(docToRemove) });
@@ -44,14 +46,24 @@ export default function Document({ url, name, menuOpened, setMenuOpened }: Props
   };
 
   const { handlePickFileOrImage } = useFileUpload(async ({url, name}) => {
+    console.log('NEW FILE UPLOADED', url);
+
     if (!user) return;
     const userRef = doc(db, 'users', user.id);
-    await updateDoc(userRef, { documents: arrayUnion({ url, name }) });
+
+    await updateDoc(userRef, {
+      documents: arrayUnion({ url, name })
+    });
+
+    console.log('NEW FILE ADDED');
+
+    await handleDeleteDocument();
+
+    console.log('OLD FILE REMOVED');
   });
 
-  const handleUpdateDocument = async () => {
+  const handleUpdateDocument = () => {
     handlePickFileOrImage();
-    await handleDeleteDocument();
   }
 
 
