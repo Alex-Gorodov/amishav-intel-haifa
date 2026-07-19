@@ -157,6 +157,8 @@ export default function ShiftActionsModal({visible, scheduleType,currentShift, i
       chosenShift,
       secondUserId,
     });
+
+    onClose()
   };
 
   const handleGive = () => {

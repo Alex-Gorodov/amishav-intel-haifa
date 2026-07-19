@@ -37,6 +37,10 @@ export const SuccessMessages = {
   DATA_SAVED: "הנתונים נשמרו בהצלחה",
   SHIFT_SWAP_REQUEST_SENT: "בקשת החלפה נשלחה בהצלחה",
   SHIFT_GIVE_REQUEST_SENT: "בקשת מסירת משמרת נשלחה בהצלחה",
-  CHECK_EMAIL_FOR_RESET_LINK: "בדוק את האימייל שלך - שלחנו לך קישור לאיפוס הסיסמה! ייתכן שהקישור הגיע לתיקיית הספאם"
+  CHECK_EMAIL_FOR_RESET_LINK: "בדוק את האימייל שלך - שלחנו לך קישור לאיפוס הסיסמה! ייתכן שהקישור הגיע לתיקיית הספאם",
+  SHIFT_SWAP_ACCEPT_COMPLETED: "חילןף בין המשמרות בוצע בהצלחה!",
+  SHIFT_SWAP_REJECT_COMPLETED: "חילןף בין המשמרות נדחה בהצלחה!",
+  SHIFT_GIVE_ACCEPT_COMPLETED: "מסירת משמרת בוצעה בהצלחה!",
+  SHIFT_GIVE_REJECT_COMPLETED: "מסירת משמרת נדחה בהצלחה!",
 
 };

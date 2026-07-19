@@ -4,13 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { State } from '../types/State';
 import useRefresh from '../hooks/useRefresh';
 import { Colors } from '../constants';
-import { confirmShiftRequest, rejectShiftRequest } from '../store/actions';
+import { confirmShiftRequest, rejectShiftRequest, setSuccess } from '../store/actions';
 import { GiveShiftRequest, RequestStatus, SwapShiftRequest } from '../types/Request';
 import { rejectRequest } from '../store/api/rejectRequest.api';
 import { approveGiveRequest, approveSwapRequest } from '../store/api/approveRequest.api';
 import { GlobalStyles } from '../constants/GlobalStyles';
 import { RequestCard } from '../components/RequestCard/RequestCard';
 import { SimpleToggle } from '../components/CustomToggle/CustomToggle';
+import { SuccessMessages } from '../constants/Messages';
 
 type PageView = 'swap' | 'give';
 
@@ -42,8 +43,10 @@ export default function AdminSwapsAndGivesScreen() {
     try {
       if (req.type === "give") {
         await approveGiveRequest(req);
+        dispatch(setSuccess({ message: SuccessMessages.SHIFT_GIVE_ACCEPT_COMPLETED}))
       } else {
         await approveSwapRequest(req);
+        dispatch(setSuccess({ message: SuccessMessages.SHIFT_SWAP_ACCEPT_COMPLETED}))
       }
       dispatch(confirmShiftRequest({ request: req }));
     } catch (err: any) {

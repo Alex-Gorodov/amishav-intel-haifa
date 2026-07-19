@@ -4,6 +4,7 @@ import { StatusLabels } from "../../constants/StatusLabels";
 import { GiveRequestWithShift, RequestStatus, SwapRequestWithShifts } from "../../types/Request";
 import { Colors } from "../../constants";
 import { normalizeDate } from "../../utils/getCurrentWeekDates";
+import useUser from "../../hooks/useUser";
 
 interface RequestCardProps {
   req: GiveRequestWithShift | SwapRequestWithShifts;
@@ -26,6 +27,8 @@ export const RequestCard = ({
   const secondUser = usersMap[1];
 
   const isSwap = req.type === 'swap';
+
+  const isUserAdmin = useUser()?.isAdmin
 
   return (
     <View style={styles.card}>
@@ -83,7 +86,7 @@ export const RequestCard = ({
         סטטוס: {StatusLabels[req.status]}
       </Text>
 
-      {(isReceived && req.status !== RequestStatus.Rejected) && (
+      {(isReceived && req.status !== RequestStatus.Rejected && (req.status !== RequestStatus.PendingAdmin || isUserAdmin)) && (
         <View style={styles.buttons}>
           <TouchableOpacity
             onPress={() => onConfirm?.(req)}
@@ -101,6 +104,7 @@ export const RequestCard = ({
 
         </View>
       )}
+      {req.status === RequestStatus.PendingAdmin && null}
       {req.status === RequestStatus.Rejected && (
         <TouchableOpacity
           onPress={() => onDelete?.(req)}
@@ -120,6 +124,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 15,
     gap: 12,
+    marginBottom: 8,
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
   text: {
